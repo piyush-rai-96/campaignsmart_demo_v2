@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-type CampaignStep = 'context' | 'audience' | 'offer' | 'creative' | 'review'
+type CampaignStep = 'context' | 'segment' | 'product' | 'promo' | 'creative' | 'review'
 
 interface Campaign {
   id: string
@@ -73,10 +73,45 @@ const CHANNELS = [
 ]
 const REGIONS = ['North America', 'Europe', 'Asia Pacific', 'Latin America']
 
+// Goal suggestions by category
+const GOAL_SUGGESTIONS: Record<string, { goal: string; icon: string }[]> = {
+  'Apparel': [
+    { goal: 'Clear excess summer inventory before fall arrivals while protecting brand margins', icon: '👗' },
+    { goal: 'Drive full-price sales for new winter collection launch', icon: '🧥' },
+    { goal: 'Re-engage lapsed customers with personalized style recommendations', icon: '✨' },
+  ],
+  'Electronics': [
+    { goal: 'Promote new smartphone accessories to recent device buyers', icon: '📱' },
+    { goal: 'Clear last-gen inventory before new model release', icon: '💻' },
+    { goal: 'Upsell extended warranties to high-value electronics purchasers', icon: '🔌' },
+  ],
+  'Home & Garden': [
+    { goal: 'Boost outdoor furniture sales for spring season', icon: '🌿' },
+    { goal: 'Cross-sell home decor to recent furniture buyers', icon: '🏠' },
+    { goal: 'Promote smart home devices to tech-savvy homeowners', icon: '💡' },
+  ],
+  'Beauty': [
+    { goal: 'Launch new skincare line to loyal beauty customers', icon: '✨' },
+    { goal: 'Drive subscription sign-ups for replenishment products', icon: '💄' },
+    { goal: 'Re-engage dormant customers with personalized beauty picks', icon: '🌸' },
+  ],
+  'Sports': [
+    { goal: 'Promote fitness gear for New Year resolution shoppers', icon: '🏃' },
+    { goal: 'Clear seasonal sports equipment before next season', icon: '⚽' },
+    { goal: 'Cross-sell nutrition products to active wear buyers', icon: '💪' },
+  ],
+  'default': [
+    { goal: 'Increase customer engagement with personalized offers', icon: '🎯' },
+    { goal: 'Drive repeat purchases from one-time buyers', icon: '🔄' },
+    { goal: 'Re-activate dormant customers with win-back campaign', icon: '💫' },
+  ]
+}
+
 const STEPS: { id: CampaignStep; label: string; icon: React.ElementType }[] = [
   { id: 'context', label: 'Context', icon: Target },
-  { id: 'audience', label: 'Audience', icon: Users },
-  { id: 'offer', label: 'Offer', icon: Tag },
+  { id: 'segment', label: 'Segment', icon: Users },
+  { id: 'product', label: 'Product', icon: Package },
+  { id: 'promo', label: 'Promo', icon: Tag },
   { id: 'creative', label: 'Creative', icon: Palette },
   { id: 'review', label: 'Review', icon: Rocket },
 ]
@@ -98,30 +133,124 @@ const deriveContext = (goal: string, category: string) => {
   }
 }
 
-const deriveAudienceStrategy = () => ({
-  segments: [
-    { id: 'seg-1', name: 'VIP Promo-Responsive', size: 45200, percentage: 18.4, description: 'High-value customers who engage with promos', logic: 'statistical' },
-    { id: 'seg-2', name: 'Mid-Value Fence Sitters', size: 62100, percentage: 25.3, description: 'Moderate spenders with browse-not-buy behavior', logic: 'rule-based' },
-    { id: 'seg-3', name: 'At-Risk High Affinity', size: 28500, percentage: 11.6, description: 'Previously active with declining engagement', logic: 'statistical' },
-    { id: 'seg-4', name: 'New Customer Converters', size: 34900, percentage: 14.2, description: 'Recent first-time buyers', logic: 'rule-based' },
+// Category-specific segments
+const CATEGORY_SEGMENTS: Record<string, { id: string; name: string; size: number; percentage: number; description: string; logic: string }[]> = {
+  'Apparel': [
+    { id: 'seg-1', name: 'Fashion Forward VIPs', size: 52300, percentage: 21.2, description: 'High spenders who buy new arrivals within 2 weeks', logic: 'statistical' },
+    { id: 'seg-2', name: 'Seasonal Shoppers', size: 78400, percentage: 31.8, description: 'Purchase primarily during sales and season changes', logic: 'rule-based' },
+    { id: 'seg-3', name: 'Basics Loyalists', size: 34200, percentage: 13.9, description: 'Repeat buyers of core wardrobe essentials', logic: 'statistical' },
+    { id: 'seg-4', name: 'Trend Explorers', size: 41500, percentage: 16.8, description: 'Browse frequently, buy selectively', logic: 'rule-based' },
   ],
-  totalCoverage: 69.5,
-  segmentationLayers: ['Engagement recency', 'Value clustering (k-means)', 'Category affinity']
-})
+  'Electronics': [
+    { id: 'seg-1', name: 'Tech Enthusiasts', size: 38900, percentage: 19.5, description: 'Early adopters who upgrade frequently', logic: 'statistical' },
+    { id: 'seg-2', name: 'Practical Upgraders', size: 67200, percentage: 33.7, description: 'Replace devices when necessary, value reliability', logic: 'rule-based' },
+    { id: 'seg-3', name: 'Accessory Collectors', size: 45600, percentage: 22.9, description: 'Buy add-ons and accessories regularly', logic: 'statistical' },
+    { id: 'seg-4', name: 'Deal Hunters', size: 29800, percentage: 14.9, description: 'Wait for major sales and promotions', logic: 'rule-based' },
+  ],
+  'Home & Garden': [
+    { id: 'seg-1', name: 'Home Renovators', size: 31200, percentage: 17.4, description: 'Large basket buyers doing room makeovers', logic: 'statistical' },
+    { id: 'seg-2', name: 'Seasonal Decorators', size: 58900, percentage: 32.8, description: 'Update decor with seasons and holidays', logic: 'rule-based' },
+    { id: 'seg-3', name: 'Garden Enthusiasts', size: 42100, percentage: 23.5, description: 'Regular outdoor and plant purchases', logic: 'statistical' },
+    { id: 'seg-4', name: 'Smart Home Adopters', size: 28400, percentage: 15.8, description: 'Interested in connected home devices', logic: 'rule-based' },
+  ],
+  'Beauty': [
+    { id: 'seg-1', name: 'Beauty Insiders', size: 48700, percentage: 24.1, description: 'Try new products, follow trends', logic: 'statistical' },
+    { id: 'seg-2', name: 'Skincare Devotees', size: 56300, percentage: 27.9, description: 'Consistent skincare routine buyers', logic: 'rule-based' },
+    { id: 'seg-3', name: 'Makeup Enthusiasts', size: 39200, percentage: 19.4, description: 'Color cosmetics collectors', logic: 'statistical' },
+    { id: 'seg-4', name: 'Clean Beauty Seekers', size: 34800, percentage: 17.2, description: 'Prefer natural and organic products', logic: 'rule-based' },
+  ],
+  'Sports': [
+    { id: 'seg-1', name: 'Fitness Fanatics', size: 44500, percentage: 22.8, description: 'Regular gym-goers, buy performance gear', logic: 'statistical' },
+    { id: 'seg-2', name: 'Weekend Warriors', size: 62300, percentage: 31.9, description: 'Casual athletes, seasonal activity spikes', logic: 'rule-based' },
+    { id: 'seg-3', name: 'Team Sports Parents', size: 38900, percentage: 19.9, description: 'Buy for kids sports activities', logic: 'statistical' },
+    { id: 'seg-4', name: 'Outdoor Adventurers', size: 29700, percentage: 15.2, description: 'Hiking, camping, outdoor activities', logic: 'rule-based' },
+  ],
+}
 
-const deriveOfferMapping = () => [
-  { segmentId: 'seg-1', segmentName: 'VIP Promo-Responsive', productGroup: 'Premium Clearance', promotion: 'VIP Early Access 25%', promoValue: '25% OFF', expectedLift: 89, marginImpact: -12, overstockCoverage: 78 },
-  { segmentId: 'seg-2', segmentName: 'Mid-Value Fence Sitters', productGroup: 'Best Sellers', promotion: 'Limited Time 20%', promoValue: '20% OFF', expectedLift: 67, marginImpact: -8, overstockCoverage: 45 },
-  { segmentId: 'seg-3', segmentName: 'At-Risk High Affinity', productGroup: 'Category Favorites', promotion: 'Welcome Back $30', promoValue: '$30 OFF', expectedLift: 76, marginImpact: -15, overstockCoverage: 32 },
-  { segmentId: 'seg-4', segmentName: 'New Customer Converters', productGroup: 'Trending Items', promotion: 'Free Shipping + 15%', promoValue: '15% + Free Ship', expectedLift: 82, marginImpact: -6, overstockCoverage: 28 },
-]
+// Category-specific offers
+const CATEGORY_OFFERS: Record<string, { segmentId: string; segmentName: string; productGroup: string; promotion: string; promoValue: string; expectedLift: number; marginImpact: number; overstockCoverage: number }[]> = {
+  'Apparel': [
+    { segmentId: 'seg-1', segmentName: 'Fashion Forward VIPs', productGroup: 'New Arrivals Premium', promotion: 'VIP First Look 20%', promoValue: '20% OFF', expectedLift: 92, marginImpact: -10, overstockCoverage: 0 },
+    { segmentId: 'seg-2', segmentName: 'Seasonal Shoppers', productGroup: 'End of Season Styles', promotion: 'Season Finale 40%', promoValue: '40% OFF', expectedLift: 78, marginImpact: -18, overstockCoverage: 85 },
+    { segmentId: 'seg-3', segmentName: 'Basics Loyalists', productGroup: 'Core Essentials', promotion: 'Stock Up & Save', promoValue: 'Buy 3 Get 1', expectedLift: 65, marginImpact: -8, overstockCoverage: 42 },
+    { segmentId: 'seg-4', segmentName: 'Trend Explorers', productGroup: 'Trending Now', promotion: 'Try Something New', promoValue: '15% OFF First', expectedLift: 71, marginImpact: -6, overstockCoverage: 28 },
+  ],
+  'Electronics': [
+    { segmentId: 'seg-1', segmentName: 'Tech Enthusiasts', productGroup: 'Latest Gadgets', promotion: 'Early Adopter Bonus', promoValue: '$50 OFF + Gift', expectedLift: 88, marginImpact: -12, overstockCoverage: 0 },
+    { segmentId: 'seg-2', segmentName: 'Practical Upgraders', productGroup: 'Certified Refurbished', promotion: 'Smart Upgrade Deal', promoValue: '25% OFF', expectedLift: 74, marginImpact: -14, overstockCoverage: 72 },
+    { segmentId: 'seg-3', segmentName: 'Accessory Collectors', productGroup: 'Cases & Chargers', promotion: 'Bundle & Save', promoValue: 'Buy 2 Get 30%', expectedLift: 82, marginImpact: -9, overstockCoverage: 56 },
+    { segmentId: 'seg-4', segmentName: 'Deal Hunters', productGroup: 'Last Gen Models', promotion: 'Clearance Blowout', promoValue: 'Up to 50% OFF', expectedLift: 91, marginImpact: -22, overstockCoverage: 94 },
+  ],
+  'Home & Garden': [
+    { segmentId: 'seg-1', segmentName: 'Home Renovators', productGroup: 'Furniture Collections', promotion: 'Room Makeover 20%', promoValue: '20% OFF $500+', expectedLift: 76, marginImpact: -11, overstockCoverage: 38 },
+    { segmentId: 'seg-2', segmentName: 'Seasonal Decorators', productGroup: 'Seasonal Decor', promotion: 'Refresh Your Space', promoValue: '30% OFF Decor', expectedLift: 84, marginImpact: -15, overstockCoverage: 78 },
+    { segmentId: 'seg-3', segmentName: 'Garden Enthusiasts', productGroup: 'Plants & Planters', promotion: 'Spring Garden Sale', promoValue: 'Buy 2 Get 1 Free', expectedLift: 79, marginImpact: -12, overstockCoverage: 45 },
+    { segmentId: 'seg-4', segmentName: 'Smart Home Adopters', productGroup: 'Smart Devices', promotion: 'Connected Home Bundle', promoValue: '$75 OFF Bundle', expectedLift: 68, marginImpact: -8, overstockCoverage: 22 },
+  ],
+  'Beauty': [
+    { segmentId: 'seg-1', segmentName: 'Beauty Insiders', productGroup: 'New Launches', promotion: 'Insider Early Access', promoValue: 'Free Gift + 15%', expectedLift: 94, marginImpact: -13, overstockCoverage: 0 },
+    { segmentId: 'seg-2', segmentName: 'Skincare Devotees', productGroup: 'Skincare Essentials', promotion: 'Routine Restock', promoValue: '25% OFF Skincare', expectedLift: 81, marginImpact: -10, overstockCoverage: 35 },
+    { segmentId: 'seg-3', segmentName: 'Makeup Enthusiasts', productGroup: 'Color Cosmetics', promotion: 'Palette Perfection', promoValue: 'Buy 2 Get 1', expectedLift: 77, marginImpact: -14, overstockCoverage: 52 },
+    { segmentId: 'seg-4', segmentName: 'Clean Beauty Seekers', productGroup: 'Natural & Organic', promotion: 'Clean Beauty Week', promoValue: '20% OFF Clean', expectedLift: 72, marginImpact: -9, overstockCoverage: 28 },
+  ],
+  'Sports': [
+    { segmentId: 'seg-1', segmentName: 'Fitness Fanatics', productGroup: 'Performance Gear', promotion: 'Pro Performance 20%', promoValue: '20% OFF Gear', expectedLift: 86, marginImpact: -11, overstockCoverage: 32 },
+    { segmentId: 'seg-2', segmentName: 'Weekend Warriors', productGroup: 'Casual Activewear', promotion: 'Weekend Ready Sale', promoValue: 'Buy 2 Save 25%', expectedLift: 73, marginImpact: -12, overstockCoverage: 48 },
+    { segmentId: 'seg-3', segmentName: 'Team Sports Parents', productGroup: 'Youth Equipment', promotion: 'Back to Sports', promoValue: '30% OFF Youth', expectedLift: 89, marginImpact: -16, overstockCoverage: 65 },
+    { segmentId: 'seg-4', segmentName: 'Outdoor Adventurers', productGroup: 'Outdoor Essentials', promotion: 'Adventure Awaits', promoValue: '$40 OFF $150+', expectedLift: 71, marginImpact: -10, overstockCoverage: 38 },
+  ],
+}
 
-const deriveCreatives = () => [
-  { id: 'cr-1', segmentId: 'seg-1', segmentName: 'VIP Promo-Responsive', headline: 'VIP Early Access: 25% OFF', subcopy: 'Exclusive clearance for our best customers', cta: 'Shop VIP Sale', tone: 'Exclusive', hasOffer: true, offerBadge: '25% OFF', complianceStatus: 'approved', reasoning: 'VIP messaging reinforces loyalty while urgency drives conversion', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600', approved: false },
-  { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Mid-Value Fence Sitters', headline: "Don't Miss Out: 20% OFF", subcopy: 'The styles you\'ve been eyeing are now on sale', cta: 'Complete Your Look', tone: 'Persuasive', hasOffer: true, offerBadge: '20% OFF', complianceStatus: 'approved', reasoning: 'Addresses browse-abandon behavior with direct CTA', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600', approved: false },
-  { id: 'cr-3', segmentId: 'seg-3', segmentName: 'At-Risk High Affinity', headline: "We've Missed You!", subcopy: "Here's $30 OFF to welcome you back", cta: 'Come Back & Save', tone: 'Warm', hasOffer: true, offerBadge: '$30 OFF', complianceStatus: 'approved', reasoning: 'Personal tone re-engages lapsed customers', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600', approved: false },
-  { id: 'cr-4', segmentId: 'seg-4', segmentName: 'New Customer Converters', headline: 'Your 2nd Order Ships Free!', subcopy: 'Plus 15% OFF to say thanks', cta: 'Shop Again', tone: 'Encouraging', hasOffer: true, offerBadge: '15% + Free Ship', complianceStatus: 'pending', reasoning: 'Builds habit with low-friction incentive', image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600', approved: false },
-]
+// Category-specific creatives with diverse images
+const CATEGORY_CREATIVES: Record<string, { id: string; segmentId: string; segmentName: string; headline: string; subcopy: string; cta: string; tone: string; hasOffer: boolean; offerBadge: string; complianceStatus: string; reasoning: string; image: string; approved: boolean }[]> = {
+  'Apparel': [
+    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Fashion Forward VIPs', headline: 'VIP First Look: New Arrivals', subcopy: 'Be the first to shop our latest collection', cta: 'Shop New In', tone: 'Exclusive', hasOffer: true, offerBadge: '20% OFF', complianceStatus: 'approved', reasoning: 'Exclusivity drives VIP engagement and early adoption', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600', approved: false },
+    { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Seasonal Shoppers', headline: 'Season Finale: Up to 40% OFF', subcopy: 'Last chance to grab summer favorites', cta: 'Shop the Sale', tone: 'Urgent', hasOffer: true, offerBadge: '40% OFF', complianceStatus: 'approved', reasoning: 'Urgency messaging aligns with seasonal shopping behavior', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600', approved: false },
+    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Basics Loyalists', headline: 'Stock Up on Essentials', subcopy: 'Your favorite basics, now with bonus savings', cta: 'Build Your Wardrobe', tone: 'Practical', hasOffer: true, offerBadge: 'Buy 3 Get 1', complianceStatus: 'approved', reasoning: 'Value-focused messaging for repeat essentials buyers', image: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600', approved: false },
+    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Trend Explorers', headline: 'Trending Now: Your Style Awaits', subcopy: 'Discover what everyone is wearing', cta: 'Explore Trends', tone: 'Inspiring', hasOffer: true, offerBadge: '15% OFF', complianceStatus: 'pending', reasoning: 'Discovery-focused for browsers who need a push', image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600', approved: false },
+  ],
+  'Electronics': [
+    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Tech Enthusiasts', headline: 'Be First: New Tech Just Dropped', subcopy: 'Early adopter exclusive with bonus gift', cta: 'Get It First', tone: 'Exciting', hasOffer: true, offerBadge: '$50 OFF + Gift', complianceStatus: 'approved', reasoning: 'Early access appeals to tech-forward customers', image: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=600', approved: false },
+    { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Practical Upgraders', headline: 'Smart Upgrade, Smart Savings', subcopy: 'Certified quality at unbeatable prices', cta: 'Upgrade Now', tone: 'Trustworthy', hasOffer: true, offerBadge: '25% OFF', complianceStatus: 'approved', reasoning: 'Value and reliability messaging for practical buyers', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600', approved: false },
+    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Accessory Collectors', headline: 'Complete Your Setup', subcopy: 'Bundle your favorites and save more', cta: 'Build Your Bundle', tone: 'Helpful', hasOffer: true, offerBadge: 'Buy 2 Get 30%', complianceStatus: 'approved', reasoning: 'Cross-sell opportunity for accessory enthusiasts', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600', approved: false },
+    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Deal Hunters', headline: 'Clearance Alert: Up to 50% OFF', subcopy: 'Premium tech at outlet prices', cta: 'Grab the Deal', tone: 'Urgent', hasOffer: true, offerBadge: 'Up to 50% OFF', complianceStatus: 'pending', reasoning: 'Deep discount messaging for price-sensitive segment', image: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600', approved: false },
+  ],
+  'Home & Garden': [
+    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Home Renovators', headline: 'Transform Your Space', subcopy: 'Big savings on your room makeover', cta: 'Start Your Project', tone: 'Inspiring', hasOffer: true, offerBadge: '20% OFF $500+', complianceStatus: 'approved', reasoning: 'Project-focused messaging for high-intent renovators', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600', approved: false },
+    { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Seasonal Decorators', headline: 'Refresh for the Season', subcopy: 'New decor to brighten your home', cta: 'Shop Seasonal', tone: 'Fresh', hasOffer: true, offerBadge: '30% OFF Decor', complianceStatus: 'approved', reasoning: 'Seasonal refresh aligns with decorating habits', image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600', approved: false },
+    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Garden Enthusiasts', headline: 'Grow Your Garden Dreams', subcopy: 'Everything you need to bloom', cta: 'Shop Garden', tone: 'Nurturing', hasOffer: true, offerBadge: 'Buy 2 Get 1', complianceStatus: 'approved', reasoning: 'Passion-driven messaging for garden lovers', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600', approved: false },
+    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Smart Home Adopters', headline: 'Make Your Home Smarter', subcopy: 'Connected living starts here', cta: 'Explore Smart Home', tone: 'Modern', hasOffer: true, offerBadge: '$75 OFF Bundle', complianceStatus: 'pending', reasoning: 'Tech-forward messaging for smart home interest', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600', approved: false },
+  ],
+  'Beauty': [
+    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Beauty Insiders', headline: 'Insider Access: New Launches', subcopy: 'Try it before everyone else + free gift', cta: 'Get Early Access', tone: 'Exclusive', hasOffer: true, offerBadge: 'Free Gift + 15%', complianceStatus: 'approved', reasoning: 'Exclusivity and newness drive insider engagement', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600', approved: false },
+    { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Skincare Devotees', headline: 'Restock Your Routine', subcopy: 'Your skincare favorites, now on sale', cta: 'Shop Skincare', tone: 'Caring', hasOffer: true, offerBadge: '25% OFF', complianceStatus: 'approved', reasoning: 'Routine-focused for consistent skincare buyers', image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600', approved: false },
+    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Makeup Enthusiasts', headline: 'Color Your World', subcopy: 'New palettes, endless possibilities', cta: 'Explore Colors', tone: 'Playful', hasOffer: true, offerBadge: 'Buy 2 Get 1', complianceStatus: 'approved', reasoning: 'Creative messaging for makeup collectors', image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=600', approved: false },
+    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Clean Beauty Seekers', headline: 'Pure Beauty, Pure Savings', subcopy: 'Natural ingredients you can trust', cta: 'Shop Clean Beauty', tone: 'Authentic', hasOffer: true, offerBadge: '20% OFF', complianceStatus: 'pending', reasoning: 'Values-aligned messaging for conscious consumers', image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=600', approved: false },
+  ],
+  'Sports': [
+    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Fitness Fanatics', headline: 'Gear Up for Greatness', subcopy: 'Performance gear for peak results', cta: 'Shop Performance', tone: 'Motivating', hasOffer: true, offerBadge: '20% OFF', complianceStatus: 'approved', reasoning: 'Performance-focused for dedicated athletes', image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600', approved: false },
+    { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Weekend Warriors', headline: 'Weekend Ready, Wallet Happy', subcopy: 'Casual comfort meets great value', cta: 'Shop Activewear', tone: 'Friendly', hasOffer: true, offerBadge: 'Buy 2 Save 25%', complianceStatus: 'approved', reasoning: 'Value and comfort for casual athletes', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600', approved: false },
+    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Team Sports Parents', headline: 'Back to Sports Season', subcopy: 'Outfit the whole team for less', cta: 'Shop Youth Gear', tone: 'Supportive', hasOffer: true, offerBadge: '30% OFF Youth', complianceStatus: 'approved', reasoning: 'Family-focused for sports parents', image: 'https://images.unsplash.com/photo-1526676037777-05a232554f77?w=600', approved: false },
+    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Outdoor Adventurers', headline: 'Adventure Awaits', subcopy: 'Explore more, spend less', cta: 'Gear Up', tone: 'Adventurous', hasOffer: true, offerBadge: '$40 OFF $150+', complianceStatus: 'pending', reasoning: 'Adventure-driven for outdoor enthusiasts', image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600', approved: false },
+  ],
+}
+
+const deriveAudienceStrategy = (category: string) => {
+  const segments = CATEGORY_SEGMENTS[category] || CATEGORY_SEGMENTS['Apparel']
+  return {
+    segments,
+    totalCoverage: segments.reduce((acc, s) => acc + s.percentage, 0),
+    segmentationLayers: ['Engagement recency', 'Value clustering (k-means)', 'Category affinity', 'Purchase behavior']
+  }
+}
+
+const deriveOfferMapping = (category: string) => {
+  return CATEGORY_OFFERS[category] || CATEGORY_OFFERS['Apparel']
+}
+
+const deriveCreatives = (category: string) => {
+  return CATEGORY_CREATIVES[category] || CATEGORY_CREATIVES['Apparel']
+}
 
 export function CampaignWorkspace() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -363,9 +492,9 @@ export function CampaignWorkspace() {
                       })
                     }
                     onConfirm={() =>
-                      handleLockStep('context', 'audience', 'Designing audience strategy...', () => ({
+                      handleLockStep('context', 'segment', 'Designing MECE segment strategy...', () => ({
                         name: activeCampaign.derivedContext!.campaignName,
-                        audienceStrategy: deriveAudienceStrategy()
+                        audienceStrategy: deriveAudienceStrategy(activeCampaign.category!)
                       }))
                     }
                     onGoBack={() => {
@@ -374,23 +503,32 @@ export function CampaignWorkspace() {
                     isWorking={isAlanWorking}
                   />
                 )}
-                {activeCampaign.currentStep === 'audience' && (
+                {activeCampaign.currentStep === 'segment' && (
                   <AudienceStep
                     campaign={activeCampaign}
                     onConfirm={() =>
-                      handleLockStep('audience', 'offer', 'Mapping promotions...', () => ({
-                        offerMapping: deriveOfferMapping()
+                      handleLockStep('segment', 'product', 'Matching products to segments...', () => ({
+                        offerMapping: deriveOfferMapping(activeCampaign.category!)
                       }))
                     }
                     isWorking={isAlanWorking}
                   />
                 )}
-                {activeCampaign.currentStep === 'offer' && (
+                {activeCampaign.currentStep === 'product' && (
+                  <ProductStep
+                    campaign={activeCampaign}
+                    onConfirm={() =>
+                      handleLockStep('product', 'promo', 'Searching promotion library...', () => ({}))
+                    }
+                    isWorking={isAlanWorking}
+                  />
+                )}
+                {activeCampaign.currentStep === 'promo' && (
                   <OfferStep
                     campaign={activeCampaign}
                     onConfirm={() =>
-                      handleLockStep('offer', 'creative', 'Generating creatives...', () => ({
-                        creatives: deriveCreatives()
+                      handleLockStep('promo', 'creative', 'Generating creatives...', () => ({
+                        creatives: deriveCreatives(activeCampaign.category!)
                       }))
                     }
                     isWorking={isAlanWorking}
@@ -482,6 +620,30 @@ function ContextInputStep({
               </Badge>
             </div>
           )}
+        </div>
+
+        {/* Goal Suggestions */}
+        <div className="mt-4">
+          <p className="text-xs text-text-muted mb-2 flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Quick suggestions {campaign.category && `for ${campaign.category}`}:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {(GOAL_SUGGESTIONS[campaign.category || 'default'] || GOAL_SUGGESTIONS['default']).map((suggestion, i) => (
+              <button
+                key={i}
+                onClick={() => onUpdate({ goal: suggestion.goal })}
+                className={cn(
+                  'px-4 py-2 rounded-xl text-sm border-2 transition-all flex items-center gap-2',
+                  campaign.goal === suggestion.goal
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border bg-white hover:border-primary/50 text-text-secondary hover:text-text-primary'
+                )}
+              >
+                <span>{suggestion.icon}</span>
+                <span className="truncate max-w-[200px]">{suggestion.goal.slice(0, 40)}...</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1048,6 +1210,232 @@ function OfferStep({
   )
 }
 
+// ============================================================================
+// STEP 3: PRODUCT / SKU ELIGIBILITY (NEW STEP)
+// ============================================================================
+
+function ProductStep({
+  campaign,
+  onConfirm,
+  isWorking
+}: {
+  campaign: Campaign
+  onConfirm: () => void
+  isWorking: boolean
+}) {
+  const segments = campaign.audienceStrategy?.segments || []
+  const [expandedSegment, setExpandedSegment] = useState<string | null>(null)
+  
+  // Rich product groups with sample SKUs
+  const productGroups = [
+    { 
+      segmentId: 'seg-1', 
+      segmentName: segments[0]?.name || 'VIP Segment', 
+      group: 'Premium & New Arrivals', 
+      skuCount: 245, 
+      rationale: 'Avoid brand dilution for VIPs',
+      color: 'from-purple-500 to-indigo-500',
+      skus: [
+        { id: 'sku-1', name: 'Cashmere Sweater', price: 189, image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=120' },
+        { id: 'sku-2', name: 'Silk Blouse', price: 145, image: 'https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?w=120' },
+        { id: 'sku-3', name: 'Wool Coat', price: 299, image: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=120' },
+        { id: 'sku-4', name: 'Designer Jeans', price: 165, image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=120' },
+      ]
+    },
+    { 
+      segmentId: 'seg-2', 
+      segmentName: segments[1]?.name || 'Mid-Value Segment', 
+      group: 'Value Bundles & Basics', 
+      skuCount: 412, 
+      rationale: 'Maximize sell-through for overstock',
+      color: 'from-blue-500 to-cyan-500',
+      skus: [
+        { id: 'sku-5', name: 'Cotton T-Shirt Pack', price: 45, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=120' },
+        { id: 'sku-6', name: 'Casual Shorts', price: 35, image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=120' },
+        { id: 'sku-7', name: 'Summer Dress', price: 65, image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=120' },
+        { id: 'sku-8', name: 'Linen Pants', price: 55, image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=120' },
+      ]
+    },
+    { 
+      segmentId: 'seg-3', 
+      segmentName: segments[2]?.name || 'At-Risk Segment', 
+      group: 'Past Favorites & Clearance', 
+      skuCount: 189, 
+      rationale: 'Win back with familiar items',
+      color: 'from-orange-500 to-amber-500',
+      skus: [
+        { id: 'sku-9', name: 'Classic Cardigan', price: 79, image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=120' },
+        { id: 'sku-10', name: 'Vintage Jacket', price: 89, image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=120' },
+        { id: 'sku-11', name: 'Relaxed Fit Jeans', price: 59, image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=120' },
+      ]
+    },
+  ]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+    >
+      <div className="bg-surface rounded-2xl border border-agent/30 overflow-hidden">
+        {/* ADB Header */}
+        <div className="bg-gradient-to-r from-agent/10 to-primary/10 px-6 py-5 border-b border-agent/20">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-agent to-primary flex items-center justify-center shadow-lg shadow-agent/25">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-lg text-text-primary">Alan has matched products per segment</p>
+              <p className="text-sm text-text-secondary">Click any segment to preview sample SKUs from the product group</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {productGroups.slice(0, segments.length || 3).map((pg, i) => (
+            <motion.div 
+              key={pg.segmentId} 
+              className={cn(
+                "rounded-2xl border-2 overflow-hidden transition-all cursor-pointer",
+                expandedSegment === pg.segmentId 
+                  ? "border-primary shadow-lg shadow-primary/10" 
+                  : "border-border hover:border-primary/30"
+              )}
+              onClick={() => setExpandedSegment(expandedSegment === pg.segmentId ? null : pg.segmentId)}
+            >
+              {/* Segment Header */}
+              <div className="p-4 bg-surface-secondary">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold shadow-md",
+                      pg.color
+                    )}>
+                      {i + 1}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-text-primary">{pg.segmentName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <ArrowRight className="w-3 h-3 text-primary" />
+                        <p className="text-sm font-medium text-primary">{pg.group}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="success" className="text-xs px-3 py-1">
+                      <Package className="w-3 h-3 mr-1" /> {pg.skuCount} SKUs
+                    </Badge>
+                    <ChevronRight className={cn(
+                      "w-5 h-5 text-text-muted transition-transform",
+                      expandedSegment === pg.segmentId && "rotate-90"
+                    )} />
+                  </div>
+                </div>
+                
+                {/* Rationale */}
+                <div className="mt-3 flex items-center gap-2">
+                  <Sparkles className="w-3 h-3 text-agent" />
+                  <p className="text-xs text-text-muted">
+                    <span className="text-agent font-medium">Why:</span> {pg.rationale}
+                  </p>
+                </div>
+              </div>
+
+              {/* Expanded SKU Preview */}
+              <AnimatePresence>
+                {expandedSegment === pg.segmentId && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-4 bg-surface border-t border-border">
+                      <p className="text-xs text-text-muted mb-3 flex items-center gap-1">
+                        <Eye className="w-3 h-3" /> Sample SKUs from this product group:
+                      </p>
+                      <div className="grid grid-cols-4 gap-3">
+                        {pg.skus.map(sku => (
+                          <div key={sku.id} className="group relative">
+                            <div className="aspect-square rounded-xl overflow-hidden bg-surface-secondary border border-border group-hover:border-primary/50 transition-all">
+                              <img 
+                                src={sku.image} 
+                                alt={sku.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                            </div>
+                            <div className="mt-2">
+                              <p className="text-xs font-medium text-text-primary truncate">{sku.name}</p>
+                              <p className="text-xs text-primary font-semibold">${sku.price}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-text-muted mt-3 text-center">
+                        + {pg.skuCount - pg.skus.length} more SKUs in this group
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-3 gap-4 pt-2">
+            <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl text-center">
+              <p className="text-2xl font-bold text-primary">
+                {productGroups.slice(0, segments.length || 3).reduce((acc, pg) => acc + pg.skuCount, 0)}
+              </p>
+              <p className="text-xs text-text-muted">Total SKUs</p>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-success/5 to-success/10 rounded-xl text-center">
+              <p className="text-2xl font-bold text-success">{segments.length || 3}</p>
+              <p className="text-xs text-text-muted">Product Groups</p>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-agent/5 to-agent/10 rounded-xl text-center">
+              <p className="text-2xl font-bold text-agent">100%</p>
+              <p className="text-xs text-text-muted">Segment Coverage</p>
+            </div>
+          </div>
+
+          {/* Why this works */}
+          <div className="p-4 bg-gradient-to-r from-success/5 to-agent/5 border border-success/20 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-success" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-success mb-1">Why this product mapping works</p>
+                <p className="text-sm text-text-secondary">
+                  Products are matched based on segment affinity, inventory levels, and margin requirements.
+                  VIPs get premium items to protect brand perception, while value-focused segments
+                  receive bundles and overstock items to maximize sell-through.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-between">
+          <Button variant="ghost">
+            <Edit3 className="w-4 h-4 mr-2" /> Adjust Product Logic
+          </Button>
+          <Button variant="primary" onClick={onConfirm} disabled={isWorking} className="px-6">
+            <Check className="w-4 h-4 mr-2" /> Approve Product Groups
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ============================================================================
+// STEP 5: CREATIVE
+// ============================================================================
+
 function CreativeStep({
   campaign,
   onApprove,
@@ -1071,7 +1459,11 @@ function CreativeStep({
   }
 
   const active = creatives.find(c => c.segmentId === activeTab)
-  const allApproved = creatives.every(c => c.approved)
+  
+  // CRITICAL FIX: Count-based approval check
+  const approvedCount = creatives.filter(c => c.approved).length
+  const totalRequired = creatives.length
+  const allApproved = approvedCount === totalRequired
 
   return (
     <motion.div
@@ -1206,8 +1598,9 @@ function CreativeStep({
 function ReviewStep({ campaign, onSaveDraft, onLaunch }: { campaign: Campaign; onSaveDraft: () => void; onLaunch: () => void }) {
   const checks = [
     { label: 'Context', locked: campaign.lockedSteps.includes('context') },
-    { label: 'Audience', locked: campaign.lockedSteps.includes('audience') },
-    { label: 'Offer', locked: campaign.lockedSteps.includes('offer') },
+    { label: 'Segment', locked: campaign.lockedSteps.includes('segment') },
+    { label: 'Product', locked: campaign.lockedSteps.includes('product') },
+    { label: 'Promo', locked: campaign.lockedSteps.includes('promo') },
     { label: 'Creative', locked: campaign.lockedSteps.includes('creative') },
   ]
 
