@@ -47,68 +47,102 @@ const initialBrandGuidelines = {
   ]
 }
 
-// Creative Campaigns Data with enhanced info
+// Creative Campaigns Data - Linked to Sally Beauty campaigns
 const creativeCampaigns = [
   { 
     id: 'CC-001', 
-    name: 'Spring Collection Launch',
-    linkedCampaigns: ['Summer Kickoff 2024'],
-    linkedPromotions: ['20% Off New Arrivals'],
-    category: 'Apparel',
+    name: 'Hair Color Holiday Refresh',
+    linkedCampaigns: ['Hair Color Holiday Refresh'],
+    linkedPromotions: ['25% Off Wella Color'],
+    category: 'Hair Color',
     assetTypes: ['Banner', 'Email'],
-    status: 'Approved',
-    lastUpdated: 'Dec 14, 2024',
-    assetCount: 6,
-    thumbnail: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400&h=300&fit=crop',
+    status: 'Draft',
+    lastUpdated: 'Dec 17, 2024',
+    assetCount: 4,
+    thumbnail: '/images/hair_color/WELLA17.jpg',
     products: [
-      { name: 'Classic Denim Jacket', image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=100&h=100&fit=crop' },
-      { name: 'Spring Dress', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=100&h=100&fit=crop' }
+      { name: 'Wella Color Charm Toner', image: '/images/hair_color/WELLA17.jpg' },
+      { name: 'Ion Permanent Crème', image: '/images/hair_color/ION87.jpg' }
     ]
   },
   { 
     id: 'CC-002', 
-    name: 'Holiday Flash Sale',
-    linkedCampaigns: ['Holiday Push Q4'],
-    linkedPromotions: ['Buy 1 Get 1 50%'],
-    category: 'Seasonal',
-    assetTypes: ['Banner', 'Push'],
-    status: 'Needs Update',
-    lastUpdated: 'Dec 12, 2024',
-    assetCount: 4,
-    thumbnail: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=400&h=300&fit=crop',
+    name: 'Olaplex Bond Repair Launch',
+    linkedCampaigns: ['Olaplex Bond Repair Launch'],
+    linkedPromotions: ['20% Off Olaplex'],
+    category: 'Hair Care',
+    assetTypes: ['Banner', 'Email', 'Push'],
+    status: 'Approved',
+    lastUpdated: 'Dec 15, 2024',
+    assetCount: 6,
+    thumbnail: '/images/hair_care/SBS-009616.jpg',
     products: [
-      { name: 'Holiday Gift Set', image: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=100&h=100&fit=crop' }
+      { name: 'Olaplex No. 4 Shampoo', image: '/images/hair_care/SBS-009616.jpg' },
+      { name: 'Mielle Rosemary Mint', image: '/images/hair_care/SBS-762003.jpg' }
     ]
   },
   { 
     id: 'CC-003', 
-    name: 'Pet Apparel Promo',
-    linkedCampaigns: ['Pet Lovers Campaign'],
-    linkedPromotions: ['$20 Off Pet Items'],
-    category: 'Pet Apparel',
-    assetTypes: ['Banner', 'Email', 'Push'],
-    status: 'Draft',
-    lastUpdated: 'Dec 10, 2024',
+    name: 'Styling Tools VIP Loyalty',
+    linkedCampaigns: ['Styling Tools VIP Loyalty'],
+    linkedPromotions: ['$30 Off BaBylissPRO'],
+    category: 'Styling Tools',
+    assetTypes: ['Banner', 'Social'],
+    status: 'In Progress',
+    lastUpdated: 'Dec 16, 2024',
     assetCount: 3,
-    thumbnail: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop',
+    thumbnail: '/images/styling_tools/SBS-021477.jpg',
     products: [
-      { name: 'Pet Winter Sweater', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=100&h=100&fit=crop' },
-      { name: 'Pet Raincoat', image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=100&h=100&fit=crop' }
+      { name: 'BaBylissPRO Nano Titanium', image: '/images/styling_tools/SBS-021477.jpg' },
+      { name: 'Hot Tools 24K Gold', image: '/images/styling_tools/SBS-345825.jpg' }
     ]
   },
   { 
     id: 'CC-004', 
-    name: 'Accessories Bundle',
-    linkedCampaigns: ['Accessory Focus'],
-    linkedPromotions: ['Bundle & Save 25%'],
-    category: 'Accessories',
-    assetTypes: ['Banner'],
+    name: 'Nails & Lashes Bundle',
+    linkedCampaigns: ['Nails & Lashes Bundle Promo'],
+    linkedPromotions: ['Buy 2 Get 1 Free'],
+    category: 'Nails',
+    assetTypes: ['Banner', 'Email'],
     status: 'Approved',
-    lastUpdated: 'Dec 8, 2024',
-    assetCount: 2,
-    thumbnail: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=300&fit=crop',
+    lastUpdated: 'Dec 12, 2024',
+    assetCount: 5,
+    thumbnail: '/images/nails/SBS-011313.jpg',
     products: [
-      { name: 'Gold Chain Necklace', image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=100&h=100&fit=crop' }
+      { name: 'OPI Nail Lacquer', image: '/images/nails/SBS-011313.jpg' },
+      { name: 'Gelish Soak-Off Gel', image: '/images/nails/SBS-004882.jpg' }
+    ]
+  },
+  { 
+    id: 'CC-005', 
+    name: "Men's Grooming Barber Pro",
+    linkedCampaigns: ["Men's Grooming Barber Pro"],
+    linkedPromotions: ['15% Off Andis Clippers'],
+    category: "Men's Grooming",
+    assetTypes: ['Banner', 'Push'],
+    status: 'Approved',
+    lastUpdated: 'Dec 11, 2024',
+    assetCount: 4,
+    thumbnail: '/images/mens_grooming/SBS-395010.jpg',
+    products: [
+      { name: 'Andis T-Outliner', image: '/images/mens_grooming/SBS-395010.jpg' },
+      { name: 'Wahl Clipper', image: '/images/mens_grooming/SBS-625016.jpg' }
+    ]
+  },
+  { 
+    id: 'CC-006', 
+    name: 'Textured Hair Curl Love',
+    linkedCampaigns: ['Textured Hair Care Curl Love'],
+    linkedPromotions: ['Buy 3 Save 25%'],
+    category: 'Textured Hair Care',
+    assetTypes: ['Banner', 'Email', 'Social'],
+    status: 'Needs Update',
+    lastUpdated: 'Dec 10, 2024',
+    assetCount: 5,
+    thumbnail: '/images/textured_hair_care/SBS-459068.jpg',
+    products: [
+      { name: 'Cantu Shea Butter', image: '/images/textured_hair_care/SBS-459068.jpg' },
+      { name: 'The Doux Mousse', image: '/images/textured_hair_care/SBS-801153.jpg' }
     ]
   },
 ]
