@@ -155,13 +155,56 @@ const agentUpdateSuggestions = [
   { id: 'compliance', label: 'Update compliance rules', description: 'Add GDPR consent language requirements' },
 ]
 
-// Creative Assets for a campaign
-const campaignAssets = [
-  { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Created for homepage hero placement', thumbnail: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=225&fit=crop', headline: '$20 OFF Pet Apparel!', subcopy: 'Exclusive offer for pet lovers' },
-  { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Square format for Instagram feed', thumbnail: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', headline: 'Cozy Up Your Pet', subcopy: 'Winter collection now available' },
-  { id: 'asset-3', type: 'Banner', format: '4:5', channel: 'Social', status: 'Needs Update', agentNote: 'Stories format, needs CTA adjustment', thumbnail: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=320&h=400&fit=crop', headline: 'Limited Time Offer', subcopy: 'Shop pet sweaters today' },
-  { id: 'asset-4', type: 'Email', format: '600px', channel: 'Email', status: 'Draft', agentNote: 'Email header banner', thumbnail: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&h=200&fit=crop', headline: 'Your Pet Deserves the Best', subcopy: 'New arrivals just dropped' },
-]
+// Asset type definition
+type CreativeAsset = {
+  id: string
+  type: string
+  format: string
+  channel: string
+  status: string
+  agentNote: string
+  thumbnail: string
+  headline: string
+  subcopy: string
+}
+
+// Creative Assets for campaigns - mapped by campaign ID
+const campaignAssetsMap: Record<string, CreativeAsset[]> = {
+  'CC-001': [ // Hair Color Holiday Refresh
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Homepage hero for hair color promotion', thumbnail: '/images/hair_color/WELLA17.jpg', headline: '25% OFF Wella Color!', subcopy: 'Professional color results at home' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Square format for Instagram feed', thumbnail: '/images/hair_color/ION87.jpg', headline: 'Transform Your Look', subcopy: 'Ion Permanent Crème - vibrant color' },
+    { id: 'asset-3', type: 'Banner', format: '4:5', channel: 'Social', status: 'Needs Update', agentNote: 'Stories format, needs CTA adjustment', thumbnail: '/images/hair_color/MANIC2.jpg', headline: 'Go Bold This Holiday', subcopy: 'Manic Panic vivid colors' },
+    { id: 'asset-4', type: 'Email', format: '600px', channel: 'Email', status: 'Draft', agentNote: 'Email header banner', thumbnail: '/images/hair_color/ARTFOX2.jpg', headline: 'Holiday Color Sale', subcopy: 'Arctic Fox semi-permanent shades' },
+  ],
+  'CC-002': [ // Olaplex Bond Repair Launch
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Homepage hero for Olaplex launch', thumbnail: '/images/hair_care/SBS-009616.jpg', headline: 'Repair & Restore', subcopy: 'Olaplex No. 4 Bond Maintenance' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Square format for Instagram', thumbnail: '/images/hair_care/SBS-762003.jpg', headline: 'Healthy Hair Starts Here', subcopy: 'Professional bond repair technology' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email campaign header', thumbnail: '/images/hair_care/SBS-009285.jpg', headline: '20% OFF Olaplex', subcopy: 'Limited time offer on all Olaplex' },
+  ],
+  'CC-003': [ // Styling Tools VIP Loyalty
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'VIP exclusive styling tools banner', thumbnail: '/images/styling_tools/SBS-021477.jpg', headline: 'Pro Tools, Pro Results', subcopy: 'BaBylissPRO Nano Titanium' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'In Progress', agentNote: 'Social media square format', thumbnail: '/images/styling_tools/SBS-345825.jpg', headline: '$30 OFF Hot Tools', subcopy: '24K Gold Curling Iron' },
+    { id: 'asset-3', type: 'Banner', format: '4:5', channel: 'Social', status: 'Draft', agentNote: 'Stories format for VIP promo', thumbnail: '/images/styling_tools/ION105.jpg', headline: 'VIP Exclusive', subcopy: 'Ion Magnesium Flat Iron' },
+  ],
+  'CC-004': [ // Nails & Lashes Bundle
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Bundle promo homepage banner', thumbnail: '/images/nails/SBS-011313.jpg', headline: 'Holiday Glam Bundle', subcopy: 'OPI + Ardell Lashes' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Instagram feed format', thumbnail: '/images/nails/SBS-004882.jpg', headline: 'Buy 2 Get 1 Free', subcopy: 'Gelish Soak-Off Gel Polish' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email promotion header', thumbnail: '/images/cosmetics_lashes/SBS-001686.jpg', headline: 'Complete Your Look', subcopy: 'Nails + Lashes bundle deal' },
+  ],
+  'CC-005': [ // Men's Grooming Barber Pro
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Barber professional tools banner', thumbnail: '/images/mens_grooming/SBS-395010.jpg', headline: 'Barber Pro Tools', subcopy: 'Andis T-Outliner Trimmer' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social media promotion', thumbnail: '/images/mens_grooming/SBS-625016.jpg', headline: '15% OFF Clippers', subcopy: 'Wahl Professional Series' },
+    { id: 'asset-3', type: 'Push', format: 'Push', channel: 'Push', status: 'Approved', agentNote: 'Push notification for barbers', thumbnail: '/images/mens_grooming/SBS-785007.jpg', headline: 'Pro Grooming Sale', subcopy: 'Shop barber essentials' },
+  ],
+  'CC-006': [ // Textured Hair Curl Love
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Curl care homepage banner', thumbnail: '/images/textured_hair_care/SBS-459068.jpg', headline: 'Love Your Curls', subcopy: 'Cantu Shea Butter Collection' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Needs Update', agentNote: 'Instagram format needs refresh', thumbnail: '/images/textured_hair_care/SBS-801153.jpg', headline: 'Define & Shine', subcopy: 'The Doux Mousse Def' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email campaign for curly hair', thumbnail: '/images/textured_hair_care/SBS-310320.jpg', headline: 'Buy 3 Save 25%', subcopy: 'Textured hair essentials' },
+  ],
+}
+
+// Default assets (fallback)
+const campaignAssets = campaignAssetsMap['CC-001']
 
 // Regeneration steps
 const regenerationSteps = [
@@ -175,33 +218,35 @@ type ViewMode = 'library' | 'review' | 'compare' | 'create'
 type GuidelinesMode = 'view' | 'agent-update' | 'upload-json' | 'review-changes'
 type CreateStep = 'details' | 'products' | 'brief' | 'generate' | 'preview'
 
-// Mock products for selection
+// Sally Beauty products for selection
 const availableProducts = [
-  { id: 'prod-1', name: 'Pet Winter Sweater', category: 'Pet Apparel', price: 35.00, image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&h=200&fit=crop' },
-  { id: 'prod-2', name: 'Classic Denim Jacket', category: 'Apparel', price: 89.99, image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=200&h=200&fit=crop' },
-  { id: 'prod-3', name: 'Gold Chain Necklace', category: 'Accessories', price: 75.00, image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200&h=200&fit=crop' },
-  { id: 'prod-4', name: 'Running Sneakers Pro', category: 'Footwear', price: 129.00, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop' },
-  { id: 'prod-5', name: 'Designer Sunglasses', category: 'Accessories', price: 95.00, image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&h=200&fit=crop' },
-  { id: 'prod-6', name: 'Leather Crossbody Bag', category: 'Bags', price: 149.99, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200&h=200&fit=crop' },
+  { id: 'prod-1', name: 'Wella Color Charm Toner', category: 'Hair Color', price: 8.99, image: '/images/hair_color/WELLA17.jpg' },
+  { id: 'prod-2', name: 'Ion Permanent Crème', category: 'Hair Color', price: 7.49, image: '/images/hair_color/ION87.jpg' },
+  { id: 'prod-3', name: 'Olaplex No. 4 Shampoo', category: 'Hair Care', price: 30.00, image: '/images/hair_care/SBS-009616.jpg' },
+  { id: 'prod-4', name: 'BaBylissPRO Nano Titanium', category: 'Styling Tools', price: 149.99, image: '/images/styling_tools/SBS-021477.jpg' },
+  { id: 'prod-5', name: 'OPI Nail Lacquer', category: 'Nails', price: 11.99, image: '/images/nails/SBS-011313.jpg' },
+  { id: 'prod-6', name: 'Andis T-Outliner', category: "Men's Grooming", price: 89.99, image: '/images/mens_grooming/SBS-395010.jpg' },
+  { id: 'prod-7', name: 'Cantu Shea Butter', category: 'Textured Hair Care', price: 6.99, image: '/images/textured_hair_care/SBS-459068.jpg' },
+  { id: 'prod-8', name: 'Manic Panic Vampire Red', category: 'Hair Color', price: 13.99, image: '/images/hair_color/MANIC2.jpg' },
 ]
 
-// Available segments for selection
+// Available segments for selection - Sally Beauty specific
 const availableSegments = [
-  { id: 'seg-1', name: 'Budget Conscious', customers: 15400, description: 'Price-sensitive customers' },
-  { id: 'seg-2', name: 'Trendsetters', customers: 8200, description: 'Early adopters of new styles' },
-  { id: 'seg-3', name: 'Loyalists', customers: 5600, description: 'High lifetime value customers' },
-  { id: 'seg-4', name: 'Pet Lovers', customers: 12300, description: 'Pet product enthusiasts' },
-  { id: 'seg-5', name: 'Seasonal Shoppers', customers: 9800, description: 'Holiday and seasonal buyers' },
-  { id: 'seg-6', name: 'Premium Buyers', customers: 4200, description: 'High-end product preference' },
+  { id: 'seg-1', name: 'Color Enthusiasts', customers: 85000, description: 'Frequent color changers' },
+  { id: 'seg-2', name: 'Professional Stylists', customers: 140000, description: 'Licensed pros buying for clients' },
+  { id: 'seg-3', name: 'First-Time Colorists', customers: 95000, description: 'New to at-home color' },
+  { id: 'seg-4', name: 'Curl Care Devotees', customers: 72000, description: 'Textured hair enthusiasts' },
+  { id: 'seg-5', name: 'Tool Upgraders', customers: 45000, description: 'Seeking premium styling tools' },
+  { id: 'seg-6', name: 'Nail Art Lovers', customers: 38000, description: 'DIY nail enthusiasts' },
 ]
 
-// Available promotions for selection
+// Available promotions for selection - Sally Beauty specific
 const availablePromos = [
-  { id: 'promo-1', name: '20% Off New Arrivals', type: 'Percentage', value: '20% OFF' },
-  { id: 'promo-2', name: 'Buy 1 Get 1 50%', type: 'BOGO', value: 'BOGO 50%' },
-  { id: 'promo-3', name: '$20 Off Pet Items', type: 'Fixed', value: '$20 OFF' },
-  { id: 'promo-4', name: 'Free Shipping Over $50', type: 'Shipping', value: 'Free Ship' },
-  { id: 'promo-5', name: '30% Off Clearance', type: 'Percentage', value: '30% OFF' },
+  { id: 'promo-1', name: '25% Off Wella Color', type: 'Percentage', value: '25% OFF' },
+  { id: 'promo-2', name: 'Buy 2 Get 1 Free Nails', type: 'BOGO', value: 'B2G1' },
+  { id: 'promo-3', name: '$30 Off BaBylissPRO', type: 'Fixed', value: '$30 OFF' },
+  { id: 'promo-4', name: '20% Off Olaplex', type: 'Percentage', value: '20% OFF' },
+  { id: 'promo-5', name: 'Free Gift with $50+', type: 'GWP', value: 'Free Gift' },
   { id: 'promo-6', name: 'Bundle & Save 25%', type: 'Bundle', value: '25% OFF' },
 ]
 
@@ -269,7 +314,10 @@ export function CreativeStudio() {
     return matchesStatus && matchesSearch
   })
 
-  const filteredAssets = campaignAssets.filter(asset => {
+  // Get assets for the selected campaign
+  const currentCampaignAssets = selectedCampaign ? (campaignAssetsMap[selectedCampaign.id] || campaignAssets) : campaignAssets
+  
+  const filteredAssets = currentCampaignAssets.filter((asset: CreativeAsset) => {
     const matchesChannel = assetChannelFilter === 'All' || asset.channel === assetChannelFilter
     const matchesStatus = assetStatusFilter === 'All' || asset.status === assetStatusFilter
     return matchesChannel && matchesStatus
