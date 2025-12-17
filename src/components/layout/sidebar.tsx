@@ -7,7 +7,7 @@ import impactLogo from '@/assets/impact_analytics_logo.jpeg'
 
 // Only working navigation items
 const navItems = [
-  { to: '/campaigns', icon: LayoutDashboard, label: 'Campaign Workspace' },
+  { to: '/campaigns', icon: LayoutDashboard, label: 'Campaign Engine' },
   { to: '/creative-studio', icon: Palette, label: 'Creative Studio' },
   { to: '/segments', icon: Users, label: 'Segment Library' },
   { to: '/promos', icon: Tag, label: 'Promotion Library' },
@@ -60,8 +60,9 @@ export function Sidebar() {
               transition={{ duration: 0.15 }}
               className="overflow-hidden whitespace-nowrap"
             >
-              <p className="text-white font-semibold text-sm">Campaign Smart</p>
-              <p className="text-gray-500 text-[10px]">by Impact Analytics</p>
+              <p className="text-white font-semibold text-sm">Agentic Campaign</p>
+              <p className="text-white/70 text-[10px]">Personalization Engine</p>
+              <p className="text-gray-500 text-[9px]">by Impact Analytics</p>
             </motion.div>
           )}
         </AnimatePresence>

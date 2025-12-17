@@ -1,0 +1,220 @@
+{
+  "categories": [
+    {
+      "id": "hair_color",
+      "name": "Hair Color",
+      "items": [
+        {
+          "sku": "WELLA17",
+          "name": "Wella Color Charm Liquid Permanent Toner (T18 Lightest Ash Blonde)",
+          "visualDescription": "Small apricot-orange box containing a small brown glass bottle.",
+          "imageUrl": "/images/hair_color/WELLA17.jpg"
+        },
+        {
+          "sku": "ION87",
+          "name": "Ion Permanent Crème Hair Color (Intense Red)",
+          "visualDescription": "Silver metallic squeeze tube with a purple \"ion\" logo; box has a color swatch on top.",
+          "imageUrl": "/images/hair_color/ION87.jpg"
+        },
+        {
+          "sku": "MANIC2",
+          "name": "Manic Panic Amplified Semi-Permanent (Vampire Red)",
+          "visualDescription": "Clear plastic jar with a black screw-top lid; vivid red gel visible inside.",
+          "imageUrl": "/images/hair_color/MANIC2.jpg"
+        },
+        {
+          "sku": "ARTFOX2",
+          "name": "Arctic Fox Semi-Permanent Hair Color (Purple AF)",
+          "visualDescription": "Clear bottle with a black pump; bright purple liquid; logo is a geometric fox.",
+          "imageUrl": "/images/hair_color/ARTFOX2.jpg"
+        },
+        {
+          "sku": "LOREAL38",
+          "name": "L'Oreal Excellence HiColor HiLights (Red)",
+          "visualDescription": "Red and gold metallic box; \"HiColor\" text in large white font.",
+          "imageUrl": "/images/hair_color/LOREAL38.jpg"
+        }
+      ]
+    },
+    {
+      "id": "hair_care",
+      "name": "Hair Care",
+      "items": [
+        {
+          "sku": "SBS-009616",
+          "name": "Olaplex No. 4 Bond Maintenance Shampoo",
+          "visualDescription": "Minimalist white cylindrical bottle with black text and a \"No. 4\" label.",
+          "imageUrl": "/images/hair_care/SBS-009616.jpg"
+        },
+        {
+          "sku": "SBS-762003",
+          "name": "Mielle Organics Rosemary Mint Strengthening Shampoo",
+          "visualDescription": "Green plastic pump bottle with a label featuring mint leaves and rosemary sprigs.",
+          "imageUrl": "/images/hair_care/SBS-762003.jpg"
+        },
+        {
+          "sku": "ION12",
+          "name": "Ion Hard Water Shampoo",
+          "visualDescription": "Light blue translucent bottle with a white flip cap; silver/white \"ion\" text.",
+          "imageUrl": "/images/hair_care/ION12.jpg"
+        },
+        {
+          "sku": "SBS-009285",
+          "name": "Bondbar Bonding Pre-Shampoo (No. 3)",
+          "visualDescription": "Small white bottle with bold black \"bondbar\" text and a large number \"3\".",
+          "imageUrl": "/images/hair_care/SBS-009285.jpg"
+        }
+      ]
+    },
+    {
+      "id": "textured_hair_care",
+      "name": "Textured Hair Care",
+      "items": [
+        {
+          "sku": "SBS-801153",
+          "name": "The Doux Mousse Def Texture Foam",
+          "visualDescription": "Tall white aerosol can with vibrant 90s-style graffiti art in pink, yellow, and black.",
+          "imageUrl": "/images/textured_hair_care/SBS-801153.jpg"
+        },
+        {
+          "sku": "SBS-310320",
+          "name": "Camille Rose Naturals Almond Jai Twisting Butter",
+          "visualDescription": "Clear jar with a pink label and black lid; creamy off-white product inside.",
+          "imageUrl": "/images/textured_hair_care/SBS-310320.jpg"
+        },
+        {
+          "sku": "SBS-762003",
+          "name": "Mielle Organics Rosemary Mint Scalp & Hair Strengthening Oil",
+          "visualDescription": "Small glass dropper bottle with a green label; oil is a rich amber color.",
+          "imageUrl": "/images/textured_hair_care/SBS-762003.jpg"
+        },
+        {
+          "sku": "SBS-459068",
+          "name": "Cantu Shea Butter Leave-In Conditioning Repair Cream",
+          "visualDescription": "Bright orange jar with a white lid; \"Cantu\" logo in orange and brown.",
+          "imageUrl": "/images/textured_hair_care/SBS-459068.jpg"
+        }
+      ]
+    },
+    {
+      "id": "styling_tools",
+      "name": "Styling Tools",
+      "items": [
+        {
+          "sku": "SBS-021477",
+          "name": "BaBylissPRO Nano Titanium Ultra-Thin Straightening Iron",
+          "visualDescription": "Distinctive \"BaByliss Blue\" (bright light blue) housing with silver titanium plates.",
+          "imageUrl": "/images/styling_tools/SBS-021477.jpg"
+        },
+        {
+          "sku": "SBS-345825",
+          "name": "Hot Tools Professional 24K Gold Curling Iron",
+          "visualDescription": "Shiny gold metal barrel with a black handle and purple \"Hot Tools\" logo.",
+          "imageUrl": "/images/styling_tools/SBS-345825.jpg"
+        },
+        {
+          "sku": "ION105",
+          "name": "Ion Magnesium Flat Iron",
+          "visualDescription": "Matte black finish with the elemental symbol \"Mg\" in a square; sometimes has teal accents.",
+          "imageUrl": "/images/styling_tools/ION105.jpg"
+        },
+        {
+          "sku": "SBS-170402",
+          "name": "Revlon One-Step Volumizer Hair Dryer Brush",
+          "visualDescription": "Large black oval brush with pink or mint green trim near the base.",
+          "imageUrl": "/images/styling_tools/SBS-170402.jpg"
+        }
+      ]
+    },
+    {
+      "id": "nails",
+      "name": "Nails",
+      "items": [
+        {
+          "sku": "SBS-011313",
+          "name": "OPI Nail Lacquer (Big Apple Red)",
+          "visualDescription": "Glass bottle with a wide base and textured black cap; classic bright red polish.",
+          "imageUrl": "/images/nails/SBS-011313.jpg"
+        },
+        {
+          "sku": "BTYSEC9",
+          "name": "Beauty Secrets 100% Pure Acetone",
+          "visualDescription": "Translucent white plastic jug (16oz or 32oz) with simple pink and black text.",
+          "imageUrl": "/images/nails/BTYSEC9.jpg"
+        },
+        {
+          "sku": "SBS-215000",
+          "name": "Seche Vite Dry Fast Top Coat",
+          "visualDescription": "Clear glass bottle with a white logo; known for being crystal clear and thick.",
+          "imageUrl": "/images/nails/SBS-215000.jpg"
+        },
+        {
+          "sku": "SBS-004882",
+          "name": "Gelish Soak-Off Gel Polish (Foundation Base Gel)",
+          "visualDescription": "White opaque bottle with a clear \"window\" near the bottom to see the clear gel.",
+          "imageUrl": "/images/nails/SBS-004882.jpg"
+        }
+      ]
+    },
+    {
+      "id": "cosmetics_lashes",
+      "name": "Cosmetics & Lashes",
+      "items": [
+        {
+          "sku": "SBS-001686",
+          "name": "Ardell Wispies Original (5 Pack)",
+          "visualDescription": "White tray with 5 pairs of black lashes; packaging is pink, black, and white.",
+          "imageUrl": "/images/cosmetics_lashes/SBS-001686.jpg"
+        },
+        {
+          "sku": "SBS-240027",
+          "name": "Duo Striplash Adhesive (Clear/White)",
+          "visualDescription": "Small white squeeze tube with blue \"DUO\" text; green font indicates \"Clear\" drying.",
+          "imageUrl": "/images/cosmetics_lashes/SBS-240027.jpg"
+        },
+        {
+          "sku": "PLADIO7",
+          "name": "Palladio Rice Powder (Translucent)",
+          "visualDescription": "Square plastic container with a black lid and yellow Asian-inspired floral design.",
+          "imageUrl": "/images/cosmetics_lashes/PLADIO7.jpg"
+        },
+        {
+          "sku": "IBN",
+          "name": "RefectoCil Cream Hair Dye (Natural Brown)",
+          "visualDescription": "Small metal tube (toothpaste style) inside a small box; often used for brows.",
+          "imageUrl": "/images/cosmetics_lashes/IBN.jpg"
+        }
+      ]
+    },
+    {
+      "id": "mens_grooming",
+      "name": "Men's Grooming",
+      "items": [
+        {
+          "sku": "SBS-395010",
+          "name": "Andis T-Outliner Trimmer",
+          "visualDescription": "Iconic grey housing with vertical ridges; T-shaped metal blade exposed at the top.",
+          "imageUrl": "/images/mens_grooming/SBS-395010.jpg"
+        },
+        {
+          "sku": "SBS-625016",
+          "name": "Clubman Pinaud After Shave Lotion",
+          "visualDescription": "Clear plastic bottle shaped like a flask; bright green liquid; gentleman logo on label.",
+          "imageUrl": "/images/mens_grooming/SBS-625016.jpg"
+        },
+        {
+          "sku": "SBS-785007",
+          "name": "Wahl Professional 5-Star Magic Clip (Cordless)",
+          "visualDescription": "Burgundy/Maroon housing with a gold \"5 Star\" logo; adjustment lever on the side.",
+          "imageUrl": "/images/mens_grooming/SBS-785007.jpg"
+        },
+        {
+          "sku": "SBS-003300",
+          "name": "Gibs Grooming Beard Oil",
+          "visualDescription": "Black glass skull-shaped bottle or cylindrical bottle with \"tattoo\" style artwork.",
+          "imageUrl": "/images/mens_grooming/SBS-003300.jpg"
+        }
+      ]
+    }
+  ]
+}

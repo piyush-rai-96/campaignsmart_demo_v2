@@ -11,6 +11,14 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 // Extended Segment type for this screen
+interface CampaignUsageDetails {
+  total: number
+  active: number
+  completed: number
+  lastUsedDate: Date
+  primaryIntent: 'Retention' | 'Win-back' | 'Conversion' | 'Promotion' | 'Acquisition' | 'Loyalty'
+}
+
 interface Segment {
   id: string
   name: string
@@ -21,6 +29,7 @@ interface Segment {
   category: string
   channel: 'Online' | 'Store' | 'Omni'
   campaignUsage: number
+  campaignDetails: CampaignUsageDetails
   lastUpdated: Date
   estimatedSize: number
   status: 'Active' | 'Archived'
@@ -39,6 +48,7 @@ const mockSegments: Segment[] = [
     category: 'Retention',
     channel: 'Omni',
     campaignUsage: 12,
+    campaignDetails: { total: 12, active: 4, completed: 8, lastUsedDate: new Date('2024-12-15'), primaryIntent: 'Retention' },
     lastUpdated: new Date('2024-12-10'),
     estimatedSize: 45000,
     status: 'Active',
@@ -54,6 +64,7 @@ const mockSegments: Segment[] = [
     category: 'Win-back',
     channel: 'Online',
     campaignUsage: 8,
+    campaignDetails: { total: 8, active: 3, completed: 5, lastUsedDate: new Date('2024-12-12'), primaryIntent: 'Win-back' },
     lastUpdated: new Date('2024-12-08'),
     estimatedSize: 28000,
     status: 'Active',
@@ -69,6 +80,7 @@ const mockSegments: Segment[] = [
     category: 'Acquisition',
     channel: 'Online',
     campaignUsage: 5,
+    campaignDetails: { total: 5, active: 2, completed: 3, lastUsedDate: new Date('2024-12-05'), primaryIntent: 'Acquisition' },
     lastUpdated: new Date('2024-12-05'),
     estimatedSize: 12000,
     status: 'Active',
@@ -84,6 +96,7 @@ const mockSegments: Segment[] = [
     category: 'Loyalty',
     channel: 'Omni',
     campaignUsage: 15,
+    campaignDetails: { total: 15, active: 6, completed: 9, lastUsedDate: new Date('2024-12-16'), primaryIntent: 'Loyalty' },
     lastUpdated: new Date('2024-12-12'),
     estimatedSize: 8500,
     status: 'Active',
@@ -99,6 +112,7 @@ const mockSegments: Segment[] = [
     category: 'Conversion',
     channel: 'Online',
     campaignUsage: 20,
+    campaignDetails: { total: 20, active: 8, completed: 12, lastUsedDate: new Date('2024-12-17'), primaryIntent: 'Conversion' },
     lastUpdated: new Date('2024-12-14'),
     estimatedSize: 35000,
     status: 'Active',
@@ -114,6 +128,7 @@ const mockSegments: Segment[] = [
     category: 'Channel Migration',
     channel: 'Store',
     campaignUsage: 3,
+    campaignDetails: { total: 3, active: 1, completed: 2, lastUsedDate: new Date('2024-11-28'), primaryIntent: 'Retention' },
     lastUpdated: new Date('2024-11-28'),
     estimatedSize: 52000,
     status: 'Active',
@@ -129,6 +144,7 @@ const mockSegments: Segment[] = [
     category: 'Seasonal',
     channel: 'Omni',
     campaignUsage: 6,
+    campaignDetails: { total: 6, active: 2, completed: 4, lastUsedDate: new Date('2024-12-01'), primaryIntent: 'Promotion' },
     lastUpdated: new Date('2024-12-01'),
     estimatedSize: 67000,
     status: 'Active',
@@ -144,6 +160,7 @@ const mockSegments: Segment[] = [
     category: 'Promotion',
     channel: 'Online',
     campaignUsage: 11,
+    campaignDetails: { total: 11, active: 5, completed: 6, lastUsedDate: new Date('2024-12-14'), primaryIntent: 'Promotion' },
     lastUpdated: new Date('2024-12-09'),
     estimatedSize: 89000,
     status: 'Active',
@@ -209,9 +226,55 @@ export function SegmentLibrary() {
   const [segmentNature, setSegmentNature] = useState<'Static' | 'Dynamic'>('Dynamic')
   const [segmentChannel, setSegmentChannel] = useState<'Online' | 'Store' | 'Omni'>('Omni')
   // Rule definition state
+  const [ruleDefinitionMode, setRuleDefinitionMode] = useState<'manual' | 'auto' | null>(null)
+  const [autoRulesGenerated, setAutoRulesGenerated] = useState(false)
+  const [autoRulesLoading, setAutoRulesLoading] = useState(false)
   const [ruleConditions, setRuleConditions] = useState<{field: string, operator: string, value: string}[]>([
     { field: '', operator: 'equals', value: '' }
   ])
+  
+  // Agent-generated rules based on segmentation type
+  const getAgentSuggestedRules = () => {
+    const rulesMap: Record<string, {field: string, operator: string, value: string}[]> = {
+      'rfm': [
+        { field: 'recency', operator: 'less_than', value: '30' },
+        { field: 'frequency', operator: 'greater_than', value: '5' },
+        { field: 'monetary', operator: 'greater_than', value: '500' },
+      ],
+      'lifecycle': [
+        { field: 'days_since_first', operator: 'greater_than', value: '90' },
+        { field: 'total_orders', operator: 'greater_than', value: '3' },
+        { field: 'lifecycle_stage', operator: 'equals', value: 'Active' },
+      ],
+      'value': [
+        { field: 'ltv', operator: 'greater_than', value: '1000' },
+        { field: 'avg_order_value', operator: 'greater_than', value: '150' },
+      ],
+      'promo': [
+        { field: 'promo_response_rate', operator: 'greater_than', value: '40' },
+        { field: 'coupon_usage', operator: 'greater_than', value: '3' },
+      ],
+      'channel': [
+        { field: 'primary_channel', operator: 'equals', value: 'Online' },
+        { field: 'online_orders_pct', operator: 'greater_than', value: '70' },
+      ],
+      'category': [
+        { field: 'top_category', operator: 'equals', value: 'Hair Care' },
+        { field: 'category_diversity', operator: 'greater_than', value: '3' },
+      ],
+    }
+    return rulesMap[selectedSegmentationType || 'rfm'] || rulesMap['rfm']
+  }
+  
+  const generateAutoRules = () => {
+    setAutoRulesLoading(true)
+    // Simulate agent processing
+    setTimeout(() => {
+      setRuleConditions(getAgentSuggestedRules())
+      setAutoRulesGenerated(true)
+      setAutoRulesLoading(false)
+    }, 1500)
+  }
   
   const addRuleCondition = () => {
     setRuleConditions([...ruleConditions, { field: '', operator: 'equals', value: '' }])
@@ -240,6 +303,9 @@ export function SegmentLibrary() {
     setSegmentNature('Dynamic')
     setSegmentChannel('Omni')
     setRuleConditions([{ field: '', operator: 'equals', value: '' }])
+    setRuleDefinitionMode(null)
+    setAutoRulesGenerated(false)
+    setAutoRulesLoading(false)
   }
 
   const hasActiveFilters = creationModeFilter !== 'all' || methodFilter !== 'all' || natureFilter !== 'all' ||
@@ -596,7 +662,6 @@ export function SegmentLibrary() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Method</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Nature</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider w-64">Definition Summary</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Category</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Channel</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-text-muted uppercase tracking-wider">Campaigns</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Last Updated</th>
@@ -606,7 +671,7 @@ export function SegmentLibrary() {
               <tbody className="divide-y divide-border">
                 {paginatedSegments.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-12 text-center">
+                    <td colSpan={9} className="px-4 py-12 text-center">
                       <Users className="w-12 h-12 text-text-muted mx-auto mb-3" />
                       <p className="text-text-primary font-medium mb-1">No segments found</p>
                       <p className="text-sm text-text-secondary mb-4">Create your first segment manually or with Alan</p>
@@ -629,7 +694,6 @@ export function SegmentLibrary() {
                       <td className="px-4 py-3"><Badge variant={segment.segmentationMethod === 'Statistical' ? 'info' : 'default'}>{segment.segmentationMethod}</Badge></td>
                       <td className="px-4 py-3"><Badge variant={segment.segmentNature === 'Dynamic' ? 'success' : 'default'}>{segment.segmentNature}</Badge></td>
                       <td className="px-4 py-3"><p className="text-sm text-text-secondary line-clamp-2">{segment.definitionSummary}</p></td>
-                      <td className="px-4 py-3 text-sm text-text-secondary">{segment.category}</td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{segment.channel}</td>
                       <td className="px-4 py-3 text-center text-sm text-text-primary font-medium">{segment.campaignUsage}</td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{segment.lastUpdated.toLocaleDateString()}</td>
@@ -906,7 +970,7 @@ export function SegmentLibrary() {
                 </div>
               )}
 
-              {/* Step 3: Rule-Based - Define Rules */}
+              {/* Step 3: Rule-Based - Define Rules with Manual vs Auto Selection */}
               {createStep === 3 && selectedMethod === 'rule-based' && (
                 <div className="p-6">
                   <h4 className="text-lg font-semibold text-text-primary mb-2">Define Segment Rules</h4>
@@ -914,119 +978,501 @@ export function SegmentLibrary() {
                     Configure the rules for your {selectedSegmentationType?.replace('-', ' ')} segmentation
                   </p>
                   
-                  <div className="space-y-4">
-                    {ruleConditions.map((condition, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        {index > 0 && (
-                          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">AND</span>
-                        )}
-                        <div className="flex-1 grid grid-cols-3 gap-3">
-                          <select
-                            value={condition.field}
-                            onChange={(e) => updateRuleCondition(index, 'field', e.target.value)}
-                            className="px-3 py-2.5 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                          >
-                            <option value="">Select field...</option>
-                            {selectedSegmentationType === 'rfm' && (
-                              <>
-                                <option value="recency">Recency (days)</option>
-                                <option value="frequency">Frequency (orders)</option>
-                                <option value="monetary">Monetary (spend)</option>
-                                <option value="rfm_score">RFM Score</option>
-                              </>
-                            )}
-                            {selectedSegmentationType === 'lifecycle' && (
-                              <>
-                                <option value="days_since_first">Days since first purchase</option>
-                                <option value="days_since_last">Days since last purchase</option>
-                                <option value="total_orders">Total orders</option>
-                                <option value="lifecycle_stage">Lifecycle stage</option>
-                              </>
-                            )}
-                            {selectedSegmentationType === 'value' && (
-                              <>
-                                <option value="ltv">Lifetime Value</option>
-                                <option value="avg_order_value">Avg Order Value</option>
-                                <option value="total_spend">Total Spend</option>
-                                <option value="value_tier">Value Tier</option>
-                              </>
-                            )}
-                            {selectedSegmentationType === 'promo' && (
-                              <>
-                                <option value="promo_response_rate">Promo Response Rate</option>
-                                <option value="coupon_usage">Coupon Usage</option>
-                                <option value="discount_sensitivity">Discount Sensitivity</option>
-                                <option value="promo_orders_pct">Promo Orders %</option>
-                              </>
-                            )}
-                            {selectedSegmentationType === 'channel' && (
-                              <>
-                                <option value="primary_channel">Primary Channel</option>
-                                <option value="online_orders_pct">Online Orders %</option>
-                                <option value="store_orders_pct">Store Orders %</option>
-                                <option value="channel_switches">Channel Switches</option>
-                              </>
-                            )}
-                            {selectedSegmentationType === 'category' && (
-                              <>
-                                <option value="top_category">Top Category</option>
-                                <option value="category_diversity">Category Diversity</option>
-                                <option value="category_spend">Category Spend</option>
-                                <option value="cross_category">Cross-Category Buyer</option>
-                              </>
-                            )}
-                          </select>
-                          <select
-                            value={condition.operator}
-                            onChange={(e) => updateRuleCondition(index, 'operator', e.target.value)}
-                            className="px-3 py-2.5 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                          >
-                            <option value="equals">Equals</option>
-                            <option value="not_equals">Not Equals</option>
-                            <option value="greater_than">Greater Than</option>
-                            <option value="less_than">Less Than</option>
-                            <option value="between">Between</option>
-                            <option value="contains">Contains</option>
-                          </select>
-                          <input
-                            type="text"
-                            value={condition.value}
-                            onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
-                            placeholder="Enter value..."
-                            className="px-3 py-2.5 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                          />
-                        </div>
-                        {ruleConditions.length > 1 && (
-                          <button onClick={() => removeRuleCondition(index)} className="p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg">
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
+                  {/* Manual vs Auto Selection */}
+                  {!ruleDefinitionMode && (
+                    <div className="space-y-3 mb-6">
+                      <p className="text-sm font-medium text-text-primary mb-3">How would you like to define rules?</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          onClick={() => {
+                            setRuleDefinitionMode('manual')
+                            setRuleConditions([{ field: '', operator: 'equals', value: '' }])
+                          }}
+                          className="p-4 bg-surface border border-border rounded-xl text-left hover:border-primary/50 hover:bg-surface-secondary transition-all group"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Edit3 className="w-5 h-5 text-primary" />
+                            </div>
+                            <h5 className="font-semibold text-text-primary">Manual</h5>
+                          </div>
+                          <p className="text-xs text-text-secondary">
+                            Build rules yourself using the rule builder with full control over conditions
+                          </p>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            setRuleDefinitionMode('auto')
+                            generateAutoRules()
+                          }}
+                          className="p-4 bg-surface border border-border rounded-xl text-left hover:border-agent/50 hover:bg-agent/5 transition-all group"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-lg bg-agent/10 flex items-center justify-center">
+                              <Sparkles className="w-5 h-5 text-agent" />
+                            </div>
+                            <h5 className="font-semibold text-text-primary">Auto (AI)</h5>
+                          </div>
+                          <p className="text-xs text-text-secondary">
+                            Let AI define optimal rules based on your segmentation type, then review
+                          </p>
+                        </button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
 
-                  <button
-                    onClick={addRuleCondition}
-                    className="mt-4 flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Condition
-                  </button>
+                  {/* Auto Mode - Loading State */}
+                  {ruleDefinitionMode === 'auto' && autoRulesLoading && (
+                    <div className="py-12 text-center">
+                      <div className="w-12 h-12 rounded-full bg-agent/10 flex items-center justify-center mx-auto mb-4">
+                        <Sparkles className="w-6 h-6 text-agent animate-pulse" />
+                      </div>
+                      <p className="text-sm font-medium text-text-primary mb-1">AI is analyzing your data...</p>
+                      <p className="text-xs text-text-secondary">Generating optimal rules for {selectedSegmentationType?.replace('-', ' ')} segmentation</p>
+                    </div>
+                  )}
 
-                  <div className="mt-6 p-4 bg-surface-secondary rounded-xl">
-                    <p className="text-xs text-text-muted mb-2">Preview</p>
-                    <p className="text-sm text-text-primary font-mono">
-                      {ruleConditions.filter(c => c.field && c.value).length > 0 
-                        ? ruleConditions.filter(c => c.field && c.value).map((c, i) => 
-                            `${i > 0 ? ' AND ' : ''}${c.field} ${c.operator.replace('_', ' ')} "${c.value}"`
-                          ).join('')
-                        : 'No rules defined yet'}
-                    </p>
-                  </div>
+                  {/* Auto Mode - Generated Rules Review */}
+                  {ruleDefinitionMode === 'auto' && autoRulesGenerated && !autoRulesLoading && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-agent" />
+                          <span className="text-sm font-medium text-agent">AI-Generated Rules</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setRuleDefinitionMode(null)
+                            setAutoRulesGenerated(false)
+                            setRuleConditions([{ field: '', operator: 'equals', value: '' }])
+                          }}
+                          className="text-xs text-text-muted hover:text-text-primary"
+                        >
+                          Change method
+                        </button>
+                      </div>
+                      
+                      <div className="p-4 bg-agent/5 border border-agent/20 rounded-xl mb-4">
+                        <p className="text-xs text-agent mb-2 font-medium">💡 AI Recommendation</p>
+                        <p className="text-sm text-text-secondary">
+                          Based on your {selectedSegmentationType?.replace('-', ' ')} segmentation type, these rules will capture high-value customers with strong engagement patterns. You can modify any rule below.
+                        </p>
+                      </div>
+
+                      {ruleConditions.map((condition, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          {index > 0 && (
+                            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">AND</span>
+                          )}
+                          <div className="flex-1 grid grid-cols-3 gap-3">
+                            {/* Field Dropdown - Custom Style */}
+                            <div className="relative">
+                              <button
+                                onClick={() => setOpenDropdown(openDropdown === `field-${index}` ? null : `field-${index}`)}
+                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                              >
+                                <span className={condition.field ? 'text-gray-900' : 'text-gray-400'}>
+                                  {condition.field ? (
+                                    selectedSegmentationType === 'rfm' ? { recency: 'Recency (days)', frequency: 'Frequency (orders)', monetary: 'Monetary (spend)', rfm_score: 'RFM Score' }[condition.field] :
+                                    selectedSegmentationType === 'lifecycle' ? { days_since_first: 'Days since first purchase', days_since_last: 'Days since last purchase', total_orders: 'Total orders', lifecycle_stage: 'Lifecycle stage' }[condition.field] :
+                                    selectedSegmentationType === 'value' ? { ltv: 'Lifetime Value', avg_order_value: 'Avg Order Value', total_spend: 'Total Spend', value_tier: 'Value Tier' }[condition.field] :
+                                    selectedSegmentationType === 'promo' ? { promo_response_rate: 'Promo Response Rate', coupon_usage: 'Coupon Usage', discount_sensitivity: 'Discount Sensitivity', promo_orders_pct: 'Promo Orders %' }[condition.field] :
+                                    selectedSegmentationType === 'channel' ? { primary_channel: 'Primary Channel', online_orders_pct: 'Online Orders %', store_orders_pct: 'Store Orders %', channel_switches: 'Channel Switches' }[condition.field] :
+                                    selectedSegmentationType === 'category' ? { top_category: 'Top Category', category_diversity: 'Category Diversity', category_spend: 'Category Spend', cross_category: 'Cross-Category Buyer' }[condition.field] :
+                                    condition.field
+                                  ) : 'Select field...'}
+                                </span>
+                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `field-${index}` && 'rotate-180')} />
+                              </button>
+                              <AnimatePresence>
+                                {openDropdown === `field-${index}` && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: -4 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    exit={{ opacity: 0, y: -4 }}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                  >
+                                    {selectedSegmentationType === 'rfm' && [
+                                      { value: 'recency', label: 'Recency (days)' },
+                                      { value: 'frequency', label: 'Frequency (orders)' },
+                                      { value: 'monetary', label: 'Monetary (spend)' },
+                                      { value: 'rfm_score', label: 'RFM Score' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'lifecycle' && [
+                                      { value: 'days_since_first', label: 'Days since first purchase' },
+                                      { value: 'days_since_last', label: 'Days since last purchase' },
+                                      { value: 'total_orders', label: 'Total orders' },
+                                      { value: 'lifecycle_stage', label: 'Lifecycle stage' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'value' && [
+                                      { value: 'ltv', label: 'Lifetime Value' },
+                                      { value: 'avg_order_value', label: 'Avg Order Value' },
+                                      { value: 'total_spend', label: 'Total Spend' },
+                                      { value: 'value_tier', label: 'Value Tier' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'promo' && [
+                                      { value: 'promo_response_rate', label: 'Promo Response Rate' },
+                                      { value: 'coupon_usage', label: 'Coupon Usage' },
+                                      { value: 'discount_sensitivity', label: 'Discount Sensitivity' },
+                                      { value: 'promo_orders_pct', label: 'Promo Orders %' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'channel' && [
+                                      { value: 'primary_channel', label: 'Primary Channel' },
+                                      { value: 'online_orders_pct', label: 'Online Orders %' },
+                                      { value: 'store_orders_pct', label: 'Store Orders %' },
+                                      { value: 'channel_switches', label: 'Channel Switches' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'category' && [
+                                      { value: 'top_category', label: 'Top Category' },
+                                      { value: 'category_diversity', label: 'Category Diversity' },
+                                      { value: 'category_spend', label: 'Category Spend' },
+                                      { value: 'cross_category', label: 'Cross-Category Buyer' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            {/* Operator Dropdown - Custom Style */}
+                            <div className="relative">
+                              <button
+                                onClick={() => setOpenDropdown(openDropdown === `operator-${index}` ? null : `operator-${index}`)}
+                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                              >
+                                <span className="text-gray-900">
+                                  {{ equals: 'Equals', not_equals: 'Not Equals', greater_than: 'Greater Than', less_than: 'Less Than', between: 'Between', contains: 'Contains' }[condition.operator] || 'Equals'}
+                                </span>
+                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `operator-${index}` && 'rotate-180')} />
+                              </button>
+                              <AnimatePresence>
+                                {openDropdown === `operator-${index}` && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: -4 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    exit={{ opacity: 0, y: -4 }}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                  >
+                                    {[
+                                      { value: 'equals', label: 'Equals' },
+                                      { value: 'not_equals', label: 'Not Equals' },
+                                      { value: 'greater_than', label: 'Greater Than' },
+                                      { value: 'less_than', label: 'Less Than' },
+                                      { value: 'between', label: 'Between' },
+                                      { value: 'contains', label: 'Contains' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'operator', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.operator === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.operator === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            <input
+                              type="text"
+                              value={condition.value}
+                              onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
+                              placeholder="Enter value..."
+                              className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                            />
+                          </div>
+                          {ruleConditions.length > 1 && (
+                            <button onClick={() => removeRuleCondition(index)} className="p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg">
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+
+                      <button
+                        onClick={addRuleCondition}
+                        className="mt-2 flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Condition
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Manual Mode - Rule Builder */}
+                  {ruleDefinitionMode === 'manual' && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Edit3 className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium text-primary">Manual Rule Builder</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setRuleDefinitionMode(null)
+                            setRuleConditions([{ field: '', operator: 'equals', value: '' }])
+                          }}
+                          className="text-xs text-text-muted hover:text-text-primary"
+                        >
+                          Change method
+                        </button>
+                      </div>
+
+                      {ruleConditions.map((condition, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          {index > 0 && (
+                            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">AND</span>
+                          )}
+                          <div className="flex-1 grid grid-cols-3 gap-3">
+                            {/* Field Dropdown - Custom Style */}
+                            <div className="relative">
+                              <button
+                                onClick={() => setOpenDropdown(openDropdown === `manual-field-${index}` ? null : `manual-field-${index}`)}
+                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                              >
+                                <span className={condition.field ? 'text-gray-900' : 'text-gray-400'}>
+                                  {condition.field ? (
+                                    selectedSegmentationType === 'rfm' ? { recency: 'Recency (days)', frequency: 'Frequency (orders)', monetary: 'Monetary (spend)', rfm_score: 'RFM Score' }[condition.field] :
+                                    selectedSegmentationType === 'lifecycle' ? { days_since_first: 'Days since first purchase', days_since_last: 'Days since last purchase', total_orders: 'Total orders', lifecycle_stage: 'Lifecycle stage' }[condition.field] :
+                                    selectedSegmentationType === 'value' ? { ltv: 'Lifetime Value', avg_order_value: 'Avg Order Value', total_spend: 'Total Spend', value_tier: 'Value Tier' }[condition.field] :
+                                    selectedSegmentationType === 'promo' ? { promo_response_rate: 'Promo Response Rate', coupon_usage: 'Coupon Usage', discount_sensitivity: 'Discount Sensitivity', promo_orders_pct: 'Promo Orders %' }[condition.field] :
+                                    selectedSegmentationType === 'channel' ? { primary_channel: 'Primary Channel', online_orders_pct: 'Online Orders %', store_orders_pct: 'Store Orders %', channel_switches: 'Channel Switches' }[condition.field] :
+                                    selectedSegmentationType === 'category' ? { top_category: 'Top Category', category_diversity: 'Category Diversity', category_spend: 'Category Spend', cross_category: 'Cross-Category Buyer' }[condition.field] :
+                                    condition.field
+                                  ) : 'Select field...'}
+                                </span>
+                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `manual-field-${index}` && 'rotate-180')} />
+                              </button>
+                              <AnimatePresence>
+                                {openDropdown === `manual-field-${index}` && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: -4 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    exit={{ opacity: 0, y: -4 }}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                  >
+                                    {selectedSegmentationType === 'rfm' && [
+                                      { value: 'recency', label: 'Recency (days)' },
+                                      { value: 'frequency', label: 'Frequency (orders)' },
+                                      { value: 'monetary', label: 'Monetary (spend)' },
+                                      { value: 'rfm_score', label: 'RFM Score' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'lifecycle' && [
+                                      { value: 'days_since_first', label: 'Days since first purchase' },
+                                      { value: 'days_since_last', label: 'Days since last purchase' },
+                                      { value: 'total_orders', label: 'Total orders' },
+                                      { value: 'lifecycle_stage', label: 'Lifecycle stage' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'value' && [
+                                      { value: 'ltv', label: 'Lifetime Value' },
+                                      { value: 'avg_order_value', label: 'Avg Order Value' },
+                                      { value: 'total_spend', label: 'Total Spend' },
+                                      { value: 'value_tier', label: 'Value Tier' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'promo' && [
+                                      { value: 'promo_response_rate', label: 'Promo Response Rate' },
+                                      { value: 'coupon_usage', label: 'Coupon Usage' },
+                                      { value: 'discount_sensitivity', label: 'Discount Sensitivity' },
+                                      { value: 'promo_orders_pct', label: 'Promo Orders %' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'channel' && [
+                                      { value: 'primary_channel', label: 'Primary Channel' },
+                                      { value: 'online_orders_pct', label: 'Online Orders %' },
+                                      { value: 'store_orders_pct', label: 'Store Orders %' },
+                                      { value: 'channel_switches', label: 'Channel Switches' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                    {selectedSegmentationType === 'category' && [
+                                      { value: 'top_category', label: 'Top Category' },
+                                      { value: 'category_diversity', label: 'Category Diversity' },
+                                      { value: 'category_spend', label: 'Category Spend' },
+                                      { value: 'cross_category', label: 'Cross-Category Buyer' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.field === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            {/* Operator Dropdown - Custom Style */}
+                            <div className="relative">
+                              <button
+                                onClick={() => setOpenDropdown(openDropdown === `manual-operator-${index}` ? null : `manual-operator-${index}`)}
+                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                              >
+                                <span className="text-gray-900">
+                                  {{ equals: 'Equals', not_equals: 'Not Equals', greater_than: 'Greater Than', less_than: 'Less Than', between: 'Between', contains: 'Contains' }[condition.operator] || 'Equals'}
+                                </span>
+                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `manual-operator-${index}` && 'rotate-180')} />
+                              </button>
+                              <AnimatePresence>
+                                {openDropdown === `manual-operator-${index}` && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: -4 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    exit={{ opacity: 0, y: -4 }}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                  >
+                                    {[
+                                      { value: 'equals', label: 'Equals' },
+                                      { value: 'not_equals', label: 'Not Equals' },
+                                      { value: 'greater_than', label: 'Greater Than' },
+                                      { value: 'less_than', label: 'Less Than' },
+                                      { value: 'between', label: 'Between' },
+                                      { value: 'contains', label: 'Contains' },
+                                    ].map((opt) => (
+                                      <button key={opt.value} onClick={() => { updateRuleCondition(index, 'operator', opt.value); setOpenDropdown(null) }}
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                          condition.operator === opt.value && 'text-primary font-medium')}>
+                                        {opt.label}
+                                        {condition.operator === opt.value && <Check className="w-4 h-4 text-primary" />}
+                                      </button>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            <input
+                              type="text"
+                              value={condition.value}
+                              onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
+                              placeholder="Enter value..."
+                              className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                            />
+                          </div>
+                          {ruleConditions.length > 1 && (
+                            <button onClick={() => removeRuleCondition(index)} className="p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg">
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+
+                      <button
+                        onClick={addRuleCondition}
+                        className="mt-2 flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Condition
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Preview - Adapts based on method */}
+                  {ruleDefinitionMode && (ruleDefinitionMode === 'manual' || autoRulesGenerated) && (
+                    <div className={cn(
+                      "mt-6 p-4 rounded-xl",
+                      ruleDefinitionMode === 'auto' ? 'bg-agent/5 border border-agent/20' : 'bg-surface-secondary'
+                    )}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {ruleDefinitionMode === 'auto' && <Sparkles className="w-3 h-3 text-agent" />}
+                        <p className="text-xs text-text-muted">
+                          {ruleDefinitionMode === 'auto' ? 'AI-Generated Preview' : 'Preview'}
+                        </p>
+                      </div>
+                      <p className="text-sm text-text-primary font-mono">
+                        {ruleConditions.filter(c => c.field && c.value).length > 0 
+                          ? ruleConditions.filter(c => c.field && c.value).map((c, i) => 
+                              `${i > 0 ? ' AND ' : ''}${c.field} ${c.operator.replace('_', ' ')} "${c.value}"`
+                            ).join('')
+                          : 'No rules defined yet'}
+                      </p>
+                      {ruleDefinitionMode === 'auto' && ruleConditions.filter(c => c.field && c.value).length > 0 && (
+                        <p className="text-xs text-agent mt-2">
+                          ✓ Estimated segment size: ~{formatNumber(Math.floor(Math.random() * 30000) + 15000)} customers
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => setCreateStep(2)}>Back</Button>
-                    <Button variant="primary" onClick={() => setCreateStep(4)}>Continue</Button>
+                    <Button variant="ghost" onClick={() => { setCreateStep(2); setRuleDefinitionMode(null); setAutoRulesGenerated(false) }}>Back</Button>
+                    <Button 
+                      variant="primary" 
+                      disabled={!ruleDefinitionMode || (ruleDefinitionMode === 'auto' && !autoRulesGenerated) || ruleConditions.filter(c => c.field && c.value).length === 0}
+                      onClick={() => setCreateStep(4)}
+                    >
+                      Continue
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1311,6 +1757,40 @@ export function SegmentLibrary() {
                     ))}
                   </div>
                 </div>
+                <div className="relative">
+                  <label className="block text-sm font-medium text-text-primary mb-2">Channel <span className="text-danger">*</span></label>
+                  <button
+                    onClick={() => setOpenDropdown(openDropdown === 'alanChannel' ? null : 'alanChannel')}
+                    className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-agent/50 transition-colors"
+                  >
+                    <span className={alanChannel ? 'text-text-primary' : 'text-text-muted'}>{alanChannel || 'Select channel...'}</span>
+                    <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'alanChannel' && 'rotate-180')} />
+                  </button>
+                  <AnimatePresence>
+                    {openDropdown === 'alanChannel' && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -4 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, y: -4 }}
+                        className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden"
+                      >
+                        {['Online', 'Store', 'Omni'].map((opt) => (
+                          <button 
+                            key={opt} 
+                            onClick={() => { setAlanChannel(opt); setOpenDropdown(null) }}
+                            className={cn(
+                              'w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
+                              alanChannel === opt && 'bg-agent/5 text-agent font-medium'
+                            )}
+                          >
+                            {opt}
+                            {alanChannel === opt && <Check className="w-4 h-4" />}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
                 <div className="p-3 bg-agent/5 rounded-lg border border-agent/20">
                   <p className="text-sm text-text-secondary">
                     <Sparkles className="w-4 h-4 text-agent inline mr-1.5" />
@@ -1327,16 +1807,6 @@ export function SegmentLibrary() {
                       <textarea value={alanBusinessIntent} onChange={(e) => setAlanBusinessIntent(e.target.value)}
                         placeholder="e.g., Find customers likely to churn in the next 30 days..."
                         className="w-full h-24 px-3 py-2.5 bg-surface-secondary border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-agent/50" />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-text-secondary mb-1.5">Channel <span className="text-danger">*</span></label>
-                      <select value={alanChannel} onChange={(e) => setAlanChannel(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-surface-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-agent/50">
-                        <option value="">Select channel...</option>
-                        <option value="Online">Online</option>
-                        <option value="Store">Store</option>
-                        <option value="Omni">Omni</option>
-                      </select>
                     </div>
                     <div>
                       <label className="block text-sm text-text-secondary mb-1.5">Time Window</label>
@@ -1555,10 +2025,59 @@ export function SegmentLibrary() {
                   </Card>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-text-muted mb-3">Usage</h4>
-                  <Card className="p-4">
-                    <p className="text-lg font-semibold text-text-primary">{selectedSegment.campaignUsage}</p>
-                    <p className="text-sm text-text-secondary">campaigns using this segment</p>
+                  <h4 className="text-sm font-medium text-text-muted mb-3">Campaign Usage</h4>
+                  <Card className="p-4 space-y-4">
+                    {/* Total Campaigns */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-2xl font-semibold text-text-primary">{selectedSegment.campaignDetails.total}</p>
+                        <p className="text-sm text-text-secondary">total campaigns</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="text-center">
+                          <div className="flex items-center gap-1.5 text-success">
+                            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                            <span className="text-lg font-semibold">{selectedSegment.campaignDetails.active}</span>
+                          </div>
+                          <p className="text-xs text-text-muted">Active</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center gap-1.5 text-text-secondary">
+                            <CheckCircle className="w-4 h-4" />
+                            <span className="text-lg font-semibold">{selectedSegment.campaignDetails.completed}</span>
+                          </div>
+                          <p className="text-xs text-text-muted">Completed</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Divider */}
+                    <div className="border-t border-border" />
+                    
+                    {/* Recency & Intent */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-text-muted mb-1">Last Used</p>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-text-muted" />
+                          <span className="text-sm font-medium text-text-primary">
+                            {selectedSegment.campaignDetails.lastUsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-muted mb-1">Primary Intent</p>
+                        <Badge variant={
+                          selectedSegment.campaignDetails.primaryIntent === 'Retention' ? 'success' :
+                          selectedSegment.campaignDetails.primaryIntent === 'Win-back' ? 'warning' :
+                          selectedSegment.campaignDetails.primaryIntent === 'Conversion' ? 'info' :
+                          selectedSegment.campaignDetails.primaryIntent === 'Promotion' ? 'agent' :
+                          selectedSegment.campaignDetails.primaryIntent === 'Acquisition' ? 'default' : 'default'
+                        }>
+                          {selectedSegment.campaignDetails.primaryIntent}
+                        </Badge>
+                      </div>
+                    </div>
                   </Card>
                 </div>
                 <div>
