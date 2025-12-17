@@ -460,17 +460,17 @@ export function CreativeStudio() {
       {/* Brand Guidelines Panel */}
       <AnimatePresence>
         {guidelinesExpanded && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-b border-slate-200 bg-white">
-            <div className="px-8 py-6">
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-b border-slate-100 bg-slate-50/50">
+            <div className="px-8 py-5">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-200 flex items-center justify-center">
+                    <Shield className="w-3.5 h-3.5 text-slate-500" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-800">Brand Guidelines</h2>
-                    <p className="text-xs text-slate-500">Last updated by {brandGuidelines.lastUpdatedBy} on {brandGuidelines.lastUpdatedAt}</p>
+                    <h2 className="text-sm font-semibold text-slate-700">Brand Guidelines</h2>
+                    <p className="text-xs text-slate-400">Last updated by {brandGuidelines.lastUpdatedBy} on {brandGuidelines.lastUpdatedAt}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -684,58 +684,58 @@ export function CreativeStudio() {
 
               {/* Guidelines Grid */}
               {guidelinesMode === 'view' && (
-                <div className="grid grid-cols-5 gap-4">
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                <div className="grid grid-cols-5 gap-3">
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center"><Image className="w-3.5 h-3.5 text-blue-600" /></div>
-                      <h3 className="text-sm font-semibold text-slate-700">Logo Usage</h3>
+                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Image className="w-3 h-3 text-slate-500" /></div>
+                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Logo Usage</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-600">
-                      {brandGuidelines.logo.rules.map((rule, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-blue-500 mt-0.5">•</span>{rule}</li>))}
+                    <ul className="space-y-1.5 text-xs text-slate-500">
+                      {brandGuidelines.logo.rules.map((rule, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-slate-300 mt-0.5">•</span>{rule}</li>))}
                     </ul>
                   </div>
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center"><Droplets className="w-3.5 h-3.5 text-pink-600" /></div>
-                      <h3 className="text-sm font-semibold text-slate-700">Color Palette</h3>
+                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Droplets className="w-3 h-3 text-slate-500" /></div>
+                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Color Palette</h3>
                     </div>
                     <div className="space-y-2">
                       {brandGuidelines.colors.map(color => (
                         <div key={color.hex} className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-md shadow-sm border border-white" style={{ backgroundColor: color.hex }} />
-                          <span className="text-xs text-slate-600">{color.name}</span>
+                          <div className="w-4 h-4 rounded-full shadow-sm ring-1 ring-slate-200" style={{ backgroundColor: color.hex }} />
+                          <span className="text-xs text-slate-500">{color.name}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-violet-100 flex items-center justify-center"><Type className="w-3.5 h-3.5 text-violet-600" /></div>
-                      <h3 className="text-sm font-semibold text-slate-700">Typography</h3>
+                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Type className="w-3 h-3 text-slate-500" /></div>
+                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Typography</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-600">
-                      <li><span className="font-medium">Headline:</span> {brandGuidelines.typography.headline}</li>
-                      <li><span className="font-medium">Subhead:</span> {brandGuidelines.typography.subhead}</li>
-                      <li><span className="font-medium">Body:</span> {brandGuidelines.typography.body}</li>
-                      <li><span className="font-medium">CTA:</span> {brandGuidelines.typography.cta}</li>
+                    <ul className="space-y-1.5 text-xs text-slate-500">
+                      <li><span className="text-slate-400">Headline:</span> {brandGuidelines.typography.headline}</li>
+                      <li><span className="text-slate-400">Subhead:</span> {brandGuidelines.typography.subhead}</li>
+                      <li><span className="text-slate-400">Body:</span> {brandGuidelines.typography.body}</li>
+                      <li><span className="text-slate-400">CTA:</span> {brandGuidelines.typography.cta}</li>
                     </ul>
                   </div>
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center"><MessageSquare className="w-3.5 h-3.5 text-amber-600" /></div>
-                      <h3 className="text-sm font-semibold text-slate-700">Tone of Voice</h3>
+                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><MessageSquare className="w-3 h-3 text-slate-500" /></div>
+                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Tone of Voice</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-600">
-                      {brandGuidelines.tone.map((item, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-amber-500 mt-0.5">•</span>{item}</li>))}
+                    <ul className="space-y-1.5 text-xs text-slate-500">
+                      {brandGuidelines.tone.map((item, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-slate-300 mt-0.5">•</span>{item}</li>))}
                     </ul>
                   </div>
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-emerald-600" /></div>
-                      <h3 className="text-sm font-semibold text-slate-700">Compliance</h3>
+                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Shield className="w-3 h-3 text-slate-500" /></div>
+                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Compliance</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-600">
-                      {brandGuidelines.compliance.map((item, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-emerald-500 mt-0.5">•</span>{item}</li>))}
+                    <ul className="space-y-1.5 text-xs text-slate-500">
+                      {brandGuidelines.compliance.map((item, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-slate-300 mt-0.5">•</span>{item}</li>))}
                     </ul>
                   </div>
                 </div>
