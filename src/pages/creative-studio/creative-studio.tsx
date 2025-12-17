@@ -209,8 +209,7 @@ export function CreativeStudio() {
   const [additionalDirection, setAdditionalDirection] = useState('')
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [currentRegenStep, setCurrentRegenStep] = useState(0)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [compareAsset, setCompareAsset] = useState<typeof campaignAssets[0] | null>(null)
+  const [_compareAsset, _setCompareAsset] = useState<typeof campaignAssets[0] | null>(null)
   
   // New Creative Campaign state
   const [createStep, setCreateStep] = useState<CreateStep>('details')
