@@ -40,6 +40,7 @@ interface Campaign {
   channel: string | null
   region: string | null
   lookbackWindow: string
+  client?: 'sally' | 'michaels'  // Client identifier for multi-tenant support
   // Audit info
   createdBy: string
   createdAt: Date
@@ -340,28 +341,41 @@ const MOCK_ACTIVE: Campaign[] = [
   }
 ]
 
-const deriveContext = (goal: string, category: string, channel?: string) => {
+const deriveContext = (goal: string, category: string, channel?: string, client?: 'sally' | 'michaels') => {
   const lowerGoal = goal.toLowerCase()
   const isClearance = lowerGoal.includes('clear') || lowerGoal.includes('inventory') || lowerGoal.includes('excess')
   const isVIP = lowerGoal.includes('vip')
   const isRetention = lowerGoal.includes('repeat') || lowerGoal.includes('retention') || lowerGoal.includes('loyalty')
   const isFullPrice = lowerGoal.includes('full-price') || lowerGoal.includes('sell-through')
+  const isMichaelsHoliday = lowerGoal.includes('christmas') || lowerGoal.includes('holiday') && client === 'michaels'
   
   // Extract category from goal if not provided
   let derivedCategory = category || 'General'
-  if (lowerGoal.includes('kids') || lowerGoal.includes('children')) derivedCategory = 'Kids Apparel'
-  else if (lowerGoal.includes('women')) derivedCategory = "Women's"
-  else if (lowerGoal.includes('men') && !lowerGoal.includes('women')) derivedCategory = "Men's"
-  else if (lowerGoal.includes('apparel')) derivedCategory = 'Apparel'
-  else if (lowerGoal.includes('footwear') || lowerGoal.includes('shoes')) derivedCategory = 'Footwear'
-  else if (lowerGoal.includes('electronics')) derivedCategory = 'Electronics'
-  else if (lowerGoal.includes('beauty')) derivedCategory = 'Beauty'
+  
+  // Michaels-specific category detection
+  if (client === 'michaels') {
+    if (lowerGoal.includes('christmas') || lowerGoal.includes('tree')) derivedCategory = 'Christmas Trees'
+    else if (lowerGoal.includes('decor') || lowerGoal.includes('ornament')) derivedCategory = 'Christmas Decor Collections'
+    else derivedCategory = 'Christmas Trees'
+  } else {
+    // Sally Beauty / default category detection
+    if (lowerGoal.includes('kids') || lowerGoal.includes('children')) derivedCategory = 'Kids Apparel'
+    else if (lowerGoal.includes('women')) derivedCategory = "Women's"
+    else if (lowerGoal.includes('men') && !lowerGoal.includes('women')) derivedCategory = "Men's"
+    else if (lowerGoal.includes('apparel')) derivedCategory = 'Apparel'
+    else if (lowerGoal.includes('footwear') || lowerGoal.includes('shoes')) derivedCategory = 'Footwear'
+    else if (lowerGoal.includes('electronics')) derivedCategory = 'Electronics'
+    else if (lowerGoal.includes('beauty')) derivedCategory = 'Beauty'
+  }
   
   // Determine campaign type and name
   let campaignType = 'Engagement Campaign'
   let campaignName = `${derivedCategory} Engagement Campaign`
   
-  if (isClearance) {
+  if (isMichaelsHoliday) {
+    campaignType = 'Holiday Seasonal Sale'
+    campaignName = `Michaels ${derivedCategory} Holiday Campaign`
+  } else if (isClearance) {
     campaignType = 'Clearance Push'
     campaignName = `${derivedCategory} Clearance Campaign`
   } else if (isVIP && isRetention) {
@@ -379,7 +393,10 @@ const deriveContext = (goal: string, category: string, channel?: string) => {
   let risks: string[] = []
   let guardrails: string[] = []
   
-  if (isClearance) {
+  if (isMichaelsHoliday || client === 'michaels') {
+    risks = ['Seasonal inventory timing', 'Post-holiday returns', 'Competitor holiday pricing']
+    guardrails = ['60% max discount on trees', 'Bundle decor with trees', 'Free shipping over $50']
+  } else if (isClearance) {
     risks = ['Margin dilution on high-value items', 'Brand perception risk', 'Cannibalization of full-price']
     guardrails = ['Cap discount at 40% for premium', 'Exclude new arrivals', 'Min margin: 25%']
   } else if (isVIP || isRetention) {
@@ -398,13 +415,14 @@ const deriveContext = (goal: string, category: string, channel?: string) => {
     campaignName,
     risks,
     guardrails,
-    estimatedUniverse: Math.floor(Math.random() * 100000) + 150000,
+    estimatedUniverse: client === 'michaels' ? Math.floor(Math.random() * 50000) + 80000 : Math.floor(Math.random() * 100000) + 150000,
     marginProtection: lowerGoal.includes('margin') || lowerGoal.includes('protect') ? 'Enabled' : null,
-    seasonality: lowerGoal.includes('holiday') ? 'Holiday Season' : lowerGoal.includes('summer') ? 'Summer' : null,
+    seasonality: lowerGoal.includes('holiday') || lowerGoal.includes('christmas') ? 'Holiday Season' : lowerGoal.includes('summer') ? 'Summer' : null,
     assumptions: [
-      { key: 'Channel', value: channel || 'Online', isAssumed: !channel },
-      { key: 'Discount flexibility', value: isClearance ? 'Moderate' : isVIP ? 'Conservative' : 'Flexible', isAssumed: true },
+      { key: 'Channel', value: channel || 'Online + In-Store', isAssumed: !channel },
+      { key: 'Discount flexibility', value: client === 'michaels' ? 'Up to 60% off' : isClearance ? 'Moderate' : isVIP ? 'Conservative' : 'Flexible', isAssumed: true },
       { key: 'Product focus', value: derivedCategory !== 'General' ? derivedCategory : 'Category-level', isAssumed: true },
+      ...(client === 'michaels' ? [{ key: 'Client', value: 'Michaels', isAssumed: false }] : []),
     ]
   }
 }
@@ -484,6 +502,19 @@ const CATEGORY_SEGMENTS: Record<string, { id: string; name: string; size: number
     { id: 'seg-3', name: 'Moisture Seekers', size: 54600, percentage: 30.7, description: 'Focus on hydration and moisture', logic: 'statistical' },
     { id: 'seg-4', name: 'Natural Hair Newbies', size: 36100, percentage: 20.3, description: 'New to natural hair journey', logic: 'rule-based' },
   ],
+  // Michaels Categories
+  'Christmas Trees': [
+    { id: 'mseg-1', name: 'Holiday Decorators', size: 42500, percentage: 28.3, description: 'Annual tree buyers who decorate early', logic: 'statistical' },
+    { id: 'mseg-2', name: 'Premium Tree Seekers', size: 31200, percentage: 20.8, description: 'Looking for high-end pre-lit trees', logic: 'rule-based' },
+    { id: 'mseg-3', name: 'First-Time Buyers', size: 38900, percentage: 25.9, description: 'New homeowners buying first tree', logic: 'statistical' },
+    { id: 'mseg-4', name: 'Upgrade Shoppers', size: 37400, percentage: 24.9, description: 'Replacing old trees with newer models', logic: 'rule-based' },
+  ],
+  'Christmas Decor Collections': [
+    { id: 'mseg-1', name: 'Ornament Collectors', size: 48700, percentage: 32.1, description: 'Build ornament collections yearly', logic: 'statistical' },
+    { id: 'mseg-2', name: 'Theme Decorators', size: 35600, percentage: 23.5, description: 'Buy coordinated decor themes', logic: 'rule-based' },
+    { id: 'mseg-3', name: 'Tree Topper Seekers', size: 29800, percentage: 19.7, description: 'Looking for statement tree toppers', logic: 'statistical' },
+    { id: 'mseg-4', name: 'Lighting Enthusiasts', size: 37500, percentage: 24.7, description: 'Focus on string lights and displays', logic: 'rule-based' },
+  ],
 }
 
 // Category-specific offers
@@ -561,6 +592,19 @@ const CATEGORY_OFFERS: Record<string, { segmentId: string; segmentName: string; 
     { segmentId: 'seg-3', segmentName: 'Moisture Seekers', productGroup: 'Textured Hair Care', promotion: 'Hydration Station', promoValue: '25% OFF Moisture', expectedLift: 82, marginImpact: -10, overstockCoverage: 40 },
     { segmentId: 'seg-4', segmentName: 'Natural Hair Newbies', productGroup: 'Textured Hair Care', promotion: 'Starter Kit', promoValue: '15% OFF First', expectedLift: 75, marginImpact: -8, overstockCoverage: 20 },
   ],
+  // Michaels Categories
+  'Christmas Trees': [
+    { segmentId: 'mseg-1', segmentName: 'Holiday Decorators', productGroup: 'Christmas Trees', promotion: 'Holiday Tree Sale', promoValue: '60% OFF Trees', expectedLift: 95, marginImpact: -25, overstockCoverage: 85 },
+    { segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', productGroup: 'Christmas Trees', promotion: 'Premium Pre-Lit', promoValue: '50% OFF Premium', expectedLift: 88, marginImpact: -20, overstockCoverage: 70 },
+    { segmentId: 'mseg-3', segmentName: 'First-Time Buyers', productGroup: 'Christmas Trees', promotion: 'First Tree Bundle', promoValue: '60% OFF + Free Skirt', expectedLift: 92, marginImpact: -28, overstockCoverage: 80 },
+    { segmentId: 'mseg-4', segmentName: 'Upgrade Shoppers', productGroup: 'Christmas Trees', promotion: 'Upgrade Special', promoValue: '60% OFF Upgrade', expectedLift: 85, marginImpact: -22, overstockCoverage: 75 },
+  ],
+  'Christmas Decor Collections': [
+    { segmentId: 'mseg-1', segmentName: 'Ornament Collectors', productGroup: 'Christmas Decor', promotion: 'Ornament Collection', promoValue: '60% OFF Ornaments', expectedLift: 90, marginImpact: -20, overstockCoverage: 90 },
+    { segmentId: 'mseg-2', segmentName: 'Theme Decorators', productGroup: 'Christmas Decor', promotion: 'Theme Bundle', promoValue: '50% OFF Themes', expectedLift: 86, marginImpact: -18, overstockCoverage: 85 },
+    { segmentId: 'mseg-3', segmentName: 'Tree Topper Seekers', productGroup: 'Christmas Decor', promotion: 'Topper Special', promoValue: '50% OFF Toppers', expectedLift: 82, marginImpact: -15, overstockCoverage: 80 },
+    { segmentId: 'mseg-4', segmentName: 'Lighting Enthusiasts', productGroup: 'Christmas Decor', promotion: 'Lights Sale', promoValue: '50% OFF Lights', expectedLift: 88, marginImpact: -16, overstockCoverage: 88 },
+  ],
 }
 
 // Category-specific creatives with diverse images
@@ -637,6 +681,19 @@ const CATEGORY_CREATIVES: Record<string, { id: string; segmentId: string; segmen
     { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Protective Stylists', headline: 'Protect & Style', subcopy: 'Camille Rose twisting butter for styles that last', cta: 'Shop Protective', tone: 'Nurturing', hasOffer: true, offerBadge: 'Buy 2 Get 1', complianceStatus: 'approved', reasoning: 'Protection-focused for style longevity', image: '/images/textured_hair_care/SBS-310320.jpg', approved: false },
     { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Moisture Seekers', headline: 'Hydration Station', subcopy: 'Cantu shea butter leave-in cream', cta: 'Shop Moisture', tone: 'Nourishing', hasOffer: true, offerBadge: '25% OFF Moisture', complianceStatus: 'approved', reasoning: 'Moisture-focused for dry hair concerns', image: '/images/textured_hair_care/SBS-459068.jpg', approved: false },
     { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Natural Hair Newbies', headline: 'Start Your Natural Journey', subcopy: 'Mielle rosemary mint oil for growth', cta: 'Get Started', tone: 'Welcoming', hasOffer: true, offerBadge: '15% OFF First', complianceStatus: 'pending', reasoning: 'Beginner-friendly for natural hair newbies', image: '/images/textured_hair_care/SBS-762003.jpg', approved: false },
+  ],
+  // Michaels Categories
+  'Christmas Trees': [
+    { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Holiday Decorators', headline: '60% OFF Christmas Trees!', subcopy: '7.5ft Pre-Lit Jackson Spruce with warm white LEDs', cta: 'Shop Trees', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF', complianceStatus: 'approved', reasoning: 'Holiday urgency for early decorators', image: '/images/christmas_trees/10772929_15.jpg', approved: false },
+    { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', headline: 'Premium Pre-Lit Trees', subcopy: 'Windsor Spruce with color-changing LED lights', cta: 'Shop Premium', tone: 'Luxurious', hasOffer: true, offerBadge: '50% OFF Premium', complianceStatus: 'approved', reasoning: 'Quality messaging for premium seekers', image: '/images/christmas_trees/10781398_10.jpg', approved: false },
+    { id: 'cr-3', segmentId: 'mseg-3', segmentName: 'First-Time Buyers', headline: 'Your First Christmas Tree', subcopy: '5ft Peppermint Pine - perfect starter tree', cta: 'Get Started', tone: 'Welcoming', hasOffer: true, offerBadge: '60% OFF + Free Skirt', complianceStatus: 'approved', reasoning: 'Beginner-friendly for new homeowners', image: '/images/christmas_trees/10781397_5.jpg', approved: false },
+    { id: 'cr-4', segmentId: 'mseg-4', segmentName: 'Upgrade Shoppers', headline: 'Upgrade Your Holiday', subcopy: '7ft Champagne Tinsel Tree - modern elegance', cta: 'Upgrade Now', tone: 'Modern', hasOffer: true, offerBadge: '60% OFF Upgrade', complianceStatus: 'pending', reasoning: 'Upgrade messaging for existing tree owners', image: '/images/christmas_trees/10781390_7.jpg', approved: false },
+  ],
+  'Christmas Decor Collections': [
+    { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Ornament Collectors', headline: 'Build Your Collection', subcopy: '40 Pack Red & White Shatterproof Ornaments', cta: 'Shop Ornaments', tone: 'Joyful', hasOffer: true, offerBadge: '60% OFF Ornaments', complianceStatus: 'approved', reasoning: 'Collection-building for ornament enthusiasts', image: '/images/christmas_decor_collections/10788224_1.jpg', approved: false },
+    { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Theme Decorators', headline: 'Complete Your Theme', subcopy: 'Gold Bethlehem Star Tree Topper', cta: 'Shop Themes', tone: 'Elegant', hasOffer: true, offerBadge: '50% OFF Themes', complianceStatus: 'approved', reasoning: 'Coordinated decor for theme lovers', image: '/images/christmas_decor_collections/10784531_2.jpg', approved: false },
+    { id: 'cr-3', segmentId: 'mseg-3', segmentName: 'Tree Topper Seekers', headline: 'Crown Your Tree', subcopy: 'Rotating Disco Ball Tree Topper', cta: 'Shop Toppers', tone: 'Fun', hasOffer: true, offerBadge: '50% OFF Toppers', complianceStatus: 'approved', reasoning: 'Statement piece for tree toppers', image: '/images/christmas_decor_collections/10792863_2.jpg', approved: false },
+    { id: 'cr-4', segmentId: 'mseg-4', segmentName: 'Lighting Enthusiasts', headline: 'Light Up the Season', subcopy: 'Gingerbread Cookie String Lights', cta: 'Shop Lights', tone: 'Whimsical', hasOffer: true, offerBadge: '50% OFF Lights', complianceStatus: 'pending', reasoning: 'Festive lighting for holiday ambiance', image: '/images/christmas_decor_collections/10785519_4.jpg', approved: false },
   ],
 }
 
@@ -759,7 +816,7 @@ export function CampaignWorkspace() {
         updates.audienceStrategy = deriveAudienceStrategy(campaign.category || 'Hair Color')
       }
       if (campaign.currentStep === 'context' && campaign.goal && !campaign.derivedContext) {
-        updates.derivedContext = deriveContext(campaign.goal, campaign.category || 'Hair Color', campaign.channel || undefined)
+        updates.derivedContext = deriveContext(campaign.goal, campaign.category || 'Hair Color', campaign.channel || undefined, campaign.client)
       }
       
       if (Object.keys(updates).length > 0) {
@@ -1728,7 +1785,7 @@ function CampaignFlowView({
                     'Evaluating channel and region implications',
                     'Generating strategic recommendations',
                   ], () => ({
-                    derivedContext: deriveContext(campaign.goal, campaign.category!, campaign.channel || undefined)
+                    derivedContext: deriveContext(campaign.goal, campaign.category!, campaign.channel || undefined, campaign.client)
                   }))
                 }
                 isWorking={isAlanWorking}
@@ -2339,9 +2396,10 @@ function ContextInputStep({
                     >
                       <div className="flex flex-col gap-2 pb-4">
                         {[
-                          { goal: 'Drive repeat purchases from VIP customers online while avoiding heavy discounts', icon: '👑', label: 'VIP Retention' },
-                          { goal: 'Clear excess Kids Apparel inventory online across the US while protecting margins', icon: '📦', label: 'Inventory Clearance' },
-                          { goal: 'Increase full-price sell-through of new Women\'s Footwear styles online in North America', icon: '👠', label: 'Full-Price Push' }
+                          { goal: 'Drive repeat purchases from VIP customers online while avoiding heavy discounts', icon: '👑', label: 'VIP Retention', client: 'sally' },
+                          { goal: 'Clear excess Kids Apparel inventory online across the US while protecting margins', icon: '📦', label: 'Inventory Clearance', client: 'sally' },
+                          { goal: 'Increase full-price sell-through of new Women\'s Footwear styles online in North America', icon: '👠', label: 'Full-Price Push', client: 'sally' },
+                          { goal: 'Drive Christmas Trees and Decor sales with 60% off holiday promotions to maximize seasonal revenue', icon: '🎄', label: 'Michaels Holiday Sale', client: 'michaels' }
                         ].map((example, i) => (
                           <motion.button
                             key={i}
@@ -2349,10 +2407,15 @@ function ContextInputStep({
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.1, duration: 0.3 }}
                             onClick={() => {
-                              onUpdate({ goal: example.goal })
+                              onUpdate({ goal: example.goal, client: example.client as 'sally' | 'michaels' })
                               setIsExamplesExpanded(false)
                             }}
-                            className="flex items-start gap-3 p-3 bg-surface rounded-xl border border-border text-left hover:border-primary/30 hover:bg-primary/5 transition-all group"
+                            className={cn(
+                              "flex items-start gap-3 p-3 bg-surface rounded-xl border text-left transition-all group",
+                              example.client === 'michaels' 
+                                ? "border-green-200 hover:border-green-400 hover:bg-green-50" 
+                                : "border-border hover:border-primary/30 hover:bg-primary/5"
+                            )}
                           >
                             <span className="text-lg">{example.icon}</span>
                             <div className="flex-1">

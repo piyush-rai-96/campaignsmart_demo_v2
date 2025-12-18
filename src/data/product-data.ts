@@ -13,6 +13,7 @@
  */
 
 import sallyProductsData from './sally_products.json'
+import michaelsProductsData from './michaels_products.json'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -23,12 +24,16 @@ export interface SKU {
   name: string          // Display name
   visualDescription: string  // For accessibility and context
   imageUrl: string      // For rendering images - SINGLE SOURCE
+  price?: number        // Optional price
+  discountedPrice?: number  // Optional discounted price
+  offerPercent?: number // Optional offer percentage
 }
 
 export interface Category {
   id: string
   name: string
   items: SKU[]
+  client?: 'sally' | 'michaels'  // Client identifier
 }
 
 export interface ProductData {
@@ -45,16 +50,55 @@ export const PLACEHOLDER_IMAGE = '/images/placeholder-product.svg'
 // LOAD PRODUCT DATA FROM JSON
 // ============================================================================
 
-const productData: ProductData = sallyProductsData as ProductData
+const sallyData: ProductData = sallyProductsData as ProductData
+
+// Map Michaels data to standard SKU format
+const michaelsCategories: Category[] = (michaelsProductsData as any).categories.map((cat: any) => ({
+  id: cat.id,
+  name: cat.name,
+  client: 'michaels' as const,
+  items: cat.items.map((item: any) => ({
+    sku: item.skuId,
+    name: item.skuName,
+    visualDescription: item.skuName,
+    imageUrl: item.imageUrl,
+    price: item.price,
+    discountedPrice: item.discountedPrice,
+    offerPercent: item.offerPercent
+  }))
+}))
+
+// Add client identifier to Sally categories
+const sallyCategories: Category[] = sallyData.categories.map(cat => ({
+  ...cat,
+  client: 'sally' as const
+}))
 
 // ============================================================================
 // EXPORTED DATA & HELPERS
 // ============================================================================
 
 /**
- * All categories from the standardized JSON
+ * All categories from both Sally and Michaels
  */
-export const CATEGORIES: Category[] = productData.categories
+export const CATEGORIES: Category[] = [...sallyCategories, ...michaelsCategories]
+
+/**
+ * Get categories by client
+ */
+export const getCategoriesByClient = (client: 'sally' | 'michaels'): Category[] => {
+  return CATEGORIES.filter(c => c.client === client)
+}
+
+/**
+ * Sally-only categories (for backward compatibility)
+ */
+export const SALLY_CATEGORIES: Category[] = sallyCategories
+
+/**
+ * Michaels-only categories
+ */
+export const MICHAELS_CATEGORIES: Category[] = michaelsCategories
 
 /**
  * Get category by ID
@@ -137,7 +181,7 @@ export interface SegmentProductMapping {
 }
 
 /**
- * Default segment-to-category mapping for campaigns
+ * Default segment-to-category mapping for Sally Beauty campaigns
  */
 export const SEGMENT_PRODUCT_MAPPINGS: SegmentProductMapping[] = [
   {
@@ -175,17 +219,48 @@ export const SEGMENT_PRODUCT_MAPPINGS: SegmentProductMapping[] = [
 ]
 
 /**
+ * Michaels segment-to-category mapping for campaigns
+ */
+export const MICHAELS_SEGMENT_MAPPINGS: SegmentProductMapping[] = [
+  {
+    segmentId: 'mseg-1',
+    segmentName: 'Holiday Decorators',
+    group: 'Christmas Trees',
+    categoryIds: ['christmas_trees'],
+    rationale: 'High-value tree buyers seeking premium pre-lit options',
+    color: 'from-green-500 to-emerald-500'
+  },
+  {
+    segmentId: 'mseg-2',
+    segmentName: 'Ornament Collectors',
+    group: 'Christmas Decor Collections',
+    categoryIds: ['christmas_decor_collections'],
+    rationale: 'Seasonal decor enthusiasts buying ornaments and toppers',
+    color: 'from-red-500 to-rose-500'
+  }
+]
+
+/**
+ * Get segment mappings by client
+ */
+export const getSegmentMappingsByClient = (client: 'sally' | 'michaels'): SegmentProductMapping[] => {
+  return client === 'michaels' ? MICHAELS_SEGMENT_MAPPINGS : SEGMENT_PRODUCT_MAPPINGS
+}
+
+/**
  * Get SKUs for a segment based on its category mappings
  */
 export const getSKUsForSegment = (segmentId: string): SKU[] => {
-  const mapping = SEGMENT_PRODUCT_MAPPINGS.find(m => m.segmentId === segmentId)
+  // Check both Sally and Michaels mappings
+  const allMappings = [...SEGMENT_PRODUCT_MAPPINGS, ...MICHAELS_SEGMENT_MAPPINGS]
+  const mapping = allMappings.find(m => m.segmentId === segmentId)
   if (!mapping) return []
   
   return mapping.categoryIds.flatMap(catId => getSKUsByCategory(catId))
 }
 
 /**
- * Get product groups for campaign ProductStep
+ * Get product groups for campaign ProductStep (Sally Beauty)
  */
 export const getProductGroupsForCampaign = (segmentNames?: string[]) => {
   return SEGMENT_PRODUCT_MAPPINGS.map((mapping, index) => {
@@ -208,6 +283,39 @@ export const getProductGroupsForCampaign = (segmentNames?: string[]) => {
   })
 }
 
+/**
+ * Get product groups for Michaels campaigns
+ */
+export const getMichaelsProductGroups = (segmentNames?: string[]) => {
+  return MICHAELS_SEGMENT_MAPPINGS.map((mapping, index) => {
+    const skus = getSKUsForSegment(mapping.segmentId)
+    return {
+      segmentId: mapping.segmentId,
+      segmentName: segmentNames?.[index] || mapping.segmentName,
+      group: mapping.group,
+      baseSkuCount: skus.length * 100, // Simulated inventory count
+      rationale: mapping.rationale,
+      color: mapping.color,
+      skus: skus.map(s => ({
+        id: s.sku,
+        name: s.name,
+        price: s.price || Math.floor(Math.random() * 200) + 50,
+        discountedPrice: s.discountedPrice,
+        offerPercent: s.offerPercent,
+        image: s.imageUrl,
+        visualDescription: s.visualDescription
+      }))
+    }
+  })
+}
+
+/**
+ * Get product groups by client
+ */
+export const getProductGroupsByClient = (client: 'sally' | 'michaels', segmentNames?: string[]) => {
+  return client === 'michaels' ? getMichaelsProductGroups(segmentNames) : getProductGroupsForCampaign(segmentNames)
+}
+
 // ============================================================================
 // SUMMARY STATS
 // ============================================================================
@@ -215,14 +323,17 @@ export const getProductGroupsForCampaign = (segmentNames?: string[]) => {
 export const getProductStats = () => ({
   totalCategories: CATEGORIES.length,
   totalSKUs: getAllSKUs().length,
+  sallyCategories: SALLY_CATEGORIES.length,
+  michaelsCategories: MICHAELS_CATEGORIES.length,
   categorySummary: CATEGORIES.map(c => ({
     id: c.id,
     name: c.name,
+    client: c.client,
     skuCount: c.items.length
   }))
 })
 
 // Log stats on load (development only)
 if (import.meta.env.DEV) {
-  console.log('📦 Sally Products Loaded:', getProductStats())
+  console.log('📦 Products Loaded:', getProductStats())
 }
