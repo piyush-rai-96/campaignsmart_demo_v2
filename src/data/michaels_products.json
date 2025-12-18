@@ -1,0 +1,96 @@
+{
+  "categories": [
+    {
+      "id": "christmas_trees",
+      "name": "Christmas Trees",
+      "items": [
+        {
+          "skuId": "10772929",
+          "skuName": "7.5ft. Pre-Lit Jackson Spruce Artificial Christmas Tree, Warm White LED Lights by Ashland",
+          "price": 579.99,
+          "offerPercent": 60,
+          "discountedPrice": 231.99,
+          "imageUrl": "/images/christmas_trees/10772929_15.jpg"
+        },
+        {
+          "skuId": "10781397",
+          "skuName": "5ft. Pre-Lit Peppermint Pine Artificial Christmas Tree, Warm White LED Lights by Ashland",
+          "price": 199.99,
+          "offerPercent": 60,
+          "discountedPrice": 79.99,
+          "imageUrl": "/images/christmas_trees/10781397_5.jpg"
+        },
+        {
+          "skuId": "10772923",
+          "skuName": "7ft. Pre-Lit Pencil Artificial Christmas Tree, Warm White Mini LED Lights by Ashland",
+          "price": 139.99,
+          "offerPercent": 60,
+          "discountedPrice": 55.99,
+          "imageUrl": "/images/christmas_trees/10772923_12.jpg"
+        },
+        {
+          "skuId": "10781398",
+          "skuName": "7.5ft. Pre-Lit Windsor Spruce Artificial Christmas Tree, Color Changing LED Lights by Ashland",
+          "price": 599.99,
+          "offerPercent": 60,
+          "discountedPrice": 239.99,
+          "imageUrl": "/images/christmas_trees/10781398_10.jpg"
+        },
+        {
+          "skuId": "10781390",
+          "skuName": "7ft. Pre-Lit Champagne Tinsel Artificial Christmas Tree, Warm White LED Lights by Ashland",
+          "price": 349.99,
+          "offerPercent": 60,
+          "discountedPrice": 139.99,
+          "imageUrl": "/images/christmas_trees/10781390_7.jpg"
+        }
+      ]
+    },
+    {
+      "id": "christmas_decor_collections",
+      "name": "Christmas Decor Collections",
+      "items": [
+        {
+          "skuId": "10788224",
+          "skuName": "40 Pack 2in Red and White Shatterproof Ball Ornaments by Ashland",
+          "price": 29.99,
+          "offerPercent": 60,
+          "discountedPrice": 11.99,
+          "imageUrl": "/images/christmas_decor_collections/10788224_1.jpg"
+        },
+        {
+          "skuId": "10784531",
+          "skuName": "15in Gold Bethlehem Star Lighted Tree Topper by Ashland",
+          "price": 34.99,
+          "offerPercent": 50,
+          "discountedPrice": 17.49,
+          "imageUrl": "/images/christmas_decor_collections/10784531_2.jpg"
+        },
+        {
+          "skuId": "10785519",
+          "skuName": "18ct. Warm White LED Gingerbread Cookie String Lights on Silver Wire by Ashland",
+          "price": 9.99,
+          "offerPercent": 50,
+          "discountedPrice": 4.99,
+          "imageUrl": "/images/christmas_decor_collections/10785519_4.jpg"
+        },
+        {
+          "skuId": "10792863",
+          "skuName": "8in Rotating Disco Ball Lighted Tree Topper by Ashland",
+          "price": 49.99,
+          "offerPercent": 50,
+          "discountedPrice": 24.99,
+          "imageUrl": "/images/christmas_decor_collections/10792863_2.jpg"
+        },
+        {
+          "skuId": "10785035",
+          "skuName": "12in Iridescent Acrylic Snowflake Lighted Tree Topper by Ashland",
+          "price": 29.99,
+          "offerPercent": 50,
+          "discountedPrice": 14.99,
+          "imageUrl": "/images/christmas_decor_collections/10785035_3.jpg"
+        }
+      ]
+    }
+  ]
+}
