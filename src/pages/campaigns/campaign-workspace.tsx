@@ -2095,9 +2095,8 @@ function ContextInputStep({
   }
 
   // Generate assumptions from hypotheses
-  const generateAssumptions = (hypotheses: { label: string; value: string; confidence: ConfidenceLevel }[], client?: 'sally' | 'michaels', goal?: string) => {
+  const generateAssumptions = (hypotheses: { label: string; value: string; confidence: ConfidenceLevel }[], client?: 'sally' | 'michaels', _goal?: string) => {
     const assumptions: AssumptionToken[] = []
-    const lowerGoal = (goal || '').toLowerCase()
     
     // Channel assumption
     const channelHypo = hypotheses.find(h => h.label === 'Likely channel')
