@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 
 // Global Data Standardization - Single Source of Truth for Categories & SKUs
 import { 
-  getProductGroupsForCampaign, 
+  getProductGroupsByClient,
   handleImageError,
   PLACEHOLDER_IMAGE 
 } from '@/data/product-data'
@@ -347,16 +347,21 @@ const deriveContext = (goal: string, category: string, channel?: string, client?
   const isVIP = lowerGoal.includes('vip')
   const isRetention = lowerGoal.includes('repeat') || lowerGoal.includes('retention') || lowerGoal.includes('loyalty')
   const isFullPrice = lowerGoal.includes('full-price') || lowerGoal.includes('sell-through')
-  const isMichaelsHoliday = lowerGoal.includes('christmas') || lowerGoal.includes('holiday') && client === 'michaels'
+  const isMichaelsHoliday = client === 'michaels' || (lowerGoal.includes('christmas') && lowerGoal.includes('holiday'))
   
   // Extract category from goal if not provided
   let derivedCategory = category || 'General'
   
   // Michaels-specific category detection
   if (client === 'michaels') {
-    if (lowerGoal.includes('christmas') || lowerGoal.includes('tree')) derivedCategory = 'Christmas Trees'
-    else if (lowerGoal.includes('decor') || lowerGoal.includes('ornament')) derivedCategory = 'Christmas Decor Collections'
-    else derivedCategory = 'Christmas Trees'
+    // For Michaels, prioritize Trees if mentioned, otherwise check for Decor
+    if (lowerGoal.includes('tree')) {
+      derivedCategory = 'Christmas Trees'
+    } else if (lowerGoal.includes('decor') || lowerGoal.includes('ornament') || lowerGoal.includes('topper') || lowerGoal.includes('light')) {
+      derivedCategory = 'Christmas Decor Collections'
+    } else {
+      derivedCategory = 'Christmas Trees'
+    }
   } else {
     // Sally Beauty / default category detection
     if (lowerGoal.includes('kids') || lowerGoal.includes('children')) derivedCategory = 'Kids Apparel'
@@ -393,7 +398,7 @@ const deriveContext = (goal: string, category: string, channel?: string, client?
   let risks: string[] = []
   let guardrails: string[] = []
   
-  if (isMichaelsHoliday || client === 'michaels') {
+  if (isMichaelsHoliday) {
     risks = ['Seasonal inventory timing', 'Post-holiday returns', 'Competitor holiday pricing']
     guardrails = ['60% max discount on trees', 'Bundle decor with trees', 'Free shipping over $50']
   } else if (isClearance) {
@@ -502,18 +507,14 @@ const CATEGORY_SEGMENTS: Record<string, { id: string; name: string; size: number
     { id: 'seg-3', name: 'Moisture Seekers', size: 54600, percentage: 30.7, description: 'Focus on hydration and moisture', logic: 'statistical' },
     { id: 'seg-4', name: 'Natural Hair Newbies', size: 36100, percentage: 20.3, description: 'New to natural hair journey', logic: 'rule-based' },
   ],
-  // Michaels Categories
+  // Michaels Categories - 2 segments mapping to product categories
   'Christmas Trees': [
-    { id: 'mseg-1', name: 'Holiday Decorators', size: 42500, percentage: 28.3, description: 'Annual tree buyers who decorate early', logic: 'statistical' },
-    { id: 'mseg-2', name: 'Premium Tree Seekers', size: 31200, percentage: 20.8, description: 'Looking for high-end pre-lit trees', logic: 'rule-based' },
-    { id: 'mseg-3', name: 'First-Time Buyers', size: 38900, percentage: 25.9, description: 'New homeowners buying first tree', logic: 'statistical' },
-    { id: 'mseg-4', name: 'Upgrade Shoppers', size: 37400, percentage: 24.9, description: 'Replacing old trees with newer models', logic: 'rule-based' },
+    { id: 'mseg-1', name: 'Holiday Decorators', size: 68500, percentage: 38.2, description: 'Ornaments, toppers, and decor enthusiasts', logic: 'statistical' },
+    { id: 'mseg-2', name: 'Premium Tree Seekers', size: 58200, percentage: 32.4, description: 'Looking for high-end pre-lit Christmas trees', logic: 'rule-based' },
   ],
   'Christmas Decor Collections': [
-    { id: 'mseg-1', name: 'Ornament Collectors', size: 48700, percentage: 32.1, description: 'Build ornament collections yearly', logic: 'statistical' },
-    { id: 'mseg-2', name: 'Theme Decorators', size: 35600, percentage: 23.5, description: 'Buy coordinated decor themes', logic: 'rule-based' },
-    { id: 'mseg-3', name: 'Tree Topper Seekers', size: 29800, percentage: 19.7, description: 'Looking for statement tree toppers', logic: 'statistical' },
-    { id: 'mseg-4', name: 'Lighting Enthusiasts', size: 37500, percentage: 24.7, description: 'Focus on string lights and displays', logic: 'rule-based' },
+    { id: 'mseg-1', name: 'Holiday Decorators', size: 68500, percentage: 38.2, description: 'Ornaments, toppers, and decor enthusiasts', logic: 'statistical' },
+    { id: 'mseg-2', name: 'Premium Tree Seekers', size: 58200, percentage: 32.4, description: 'Looking for high-end pre-lit Christmas trees', logic: 'rule-based' },
   ],
 }
 
@@ -592,18 +593,14 @@ const CATEGORY_OFFERS: Record<string, { segmentId: string; segmentName: string; 
     { segmentId: 'seg-3', segmentName: 'Moisture Seekers', productGroup: 'Textured Hair Care', promotion: 'Hydration Station', promoValue: '25% OFF Moisture', expectedLift: 82, marginImpact: -10, overstockCoverage: 40 },
     { segmentId: 'seg-4', segmentName: 'Natural Hair Newbies', productGroup: 'Textured Hair Care', promotion: 'Starter Kit', promoValue: '15% OFF First', expectedLift: 75, marginImpact: -8, overstockCoverage: 20 },
   ],
-  // Michaels Categories
+  // Michaels Categories - 2 segments
   'Christmas Trees': [
-    { segmentId: 'mseg-1', segmentName: 'Holiday Decorators', productGroup: 'Christmas Trees', promotion: 'Holiday Tree Sale', promoValue: '60% OFF Trees', expectedLift: 95, marginImpact: -25, overstockCoverage: 85 },
-    { segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', productGroup: 'Christmas Trees', promotion: 'Premium Pre-Lit', promoValue: '50% OFF Premium', expectedLift: 88, marginImpact: -20, overstockCoverage: 70 },
-    { segmentId: 'mseg-3', segmentName: 'First-Time Buyers', productGroup: 'Christmas Trees', promotion: 'First Tree Bundle', promoValue: '60% OFF + Free Skirt', expectedLift: 92, marginImpact: -28, overstockCoverage: 80 },
-    { segmentId: 'mseg-4', segmentName: 'Upgrade Shoppers', productGroup: 'Christmas Trees', promotion: 'Upgrade Special', promoValue: '60% OFF Upgrade', expectedLift: 85, marginImpact: -22, overstockCoverage: 75 },
+    { segmentId: 'mseg-1', segmentName: 'Holiday Decorators', productGroup: 'Christmas Decor Collections', promotion: 'Holiday Decor Sale', promoValue: '60% OFF Decor', expectedLift: 92, marginImpact: -22, overstockCoverage: 88 },
+    { segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', productGroup: 'Christmas Trees', promotion: 'Premium Tree Sale', promoValue: '60% OFF Trees', expectedLift: 95, marginImpact: -25, overstockCoverage: 85 },
   ],
   'Christmas Decor Collections': [
-    { segmentId: 'mseg-1', segmentName: 'Ornament Collectors', productGroup: 'Christmas Decor', promotion: 'Ornament Collection', promoValue: '60% OFF Ornaments', expectedLift: 90, marginImpact: -20, overstockCoverage: 90 },
-    { segmentId: 'mseg-2', segmentName: 'Theme Decorators', productGroup: 'Christmas Decor', promotion: 'Theme Bundle', promoValue: '50% OFF Themes', expectedLift: 86, marginImpact: -18, overstockCoverage: 85 },
-    { segmentId: 'mseg-3', segmentName: 'Tree Topper Seekers', productGroup: 'Christmas Decor', promotion: 'Topper Special', promoValue: '50% OFF Toppers', expectedLift: 82, marginImpact: -15, overstockCoverage: 80 },
-    { segmentId: 'mseg-4', segmentName: 'Lighting Enthusiasts', productGroup: 'Christmas Decor', promotion: 'Lights Sale', promoValue: '50% OFF Lights', expectedLift: 88, marginImpact: -16, overstockCoverage: 88 },
+    { segmentId: 'mseg-1', segmentName: 'Holiday Decorators', productGroup: 'Christmas Decor Collections', promotion: 'Holiday Decor Sale', promoValue: '60% OFF Decor', expectedLift: 92, marginImpact: -22, overstockCoverage: 88 },
+    { segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', productGroup: 'Christmas Trees', promotion: 'Premium Tree Sale', promoValue: '60% OFF Trees', expectedLift: 95, marginImpact: -25, overstockCoverage: 85 },
   ],
 }
 
@@ -682,44 +679,63 @@ const CATEGORY_CREATIVES: Record<string, { id: string; segmentId: string; segmen
     { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Moisture Seekers', headline: 'Hydration Station', subcopy: 'Cantu shea butter leave-in cream', cta: 'Shop Moisture', tone: 'Nourishing', hasOffer: true, offerBadge: '25% OFF Moisture', complianceStatus: 'approved', reasoning: 'Moisture-focused for dry hair concerns', image: '/images/textured_hair_care/SBS-459068.jpg', approved: false },
     { id: 'cr-4', segmentId: 'seg-4', segmentName: 'Natural Hair Newbies', headline: 'Start Your Natural Journey', subcopy: 'Mielle rosemary mint oil for growth', cta: 'Get Started', tone: 'Welcoming', hasOffer: true, offerBadge: '15% OFF First', complianceStatus: 'pending', reasoning: 'Beginner-friendly for natural hair newbies', image: '/images/textured_hair_care/SBS-762003.jpg', approved: false },
   ],
-  // Michaels Categories
+  // Michaels Categories - 2 segments
   'Christmas Trees': [
-    { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Holiday Decorators', headline: '60% OFF Christmas Trees!', subcopy: '7.5ft Pre-Lit Jackson Spruce with warm white LEDs', cta: 'Shop Trees', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF', complianceStatus: 'approved', reasoning: 'Holiday urgency for early decorators', image: '/images/christmas_trees/10772929_15.jpg', approved: false },
-    { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', headline: 'Premium Pre-Lit Trees', subcopy: 'Windsor Spruce with color-changing LED lights', cta: 'Shop Premium', tone: 'Luxurious', hasOffer: true, offerBadge: '50% OFF Premium', complianceStatus: 'approved', reasoning: 'Quality messaging for premium seekers', image: '/images/christmas_trees/10781398_10.jpg', approved: false },
-    { id: 'cr-3', segmentId: 'mseg-3', segmentName: 'First-Time Buyers', headline: 'Your First Christmas Tree', subcopy: '5ft Peppermint Pine - perfect starter tree', cta: 'Get Started', tone: 'Welcoming', hasOffer: true, offerBadge: '60% OFF + Free Skirt', complianceStatus: 'approved', reasoning: 'Beginner-friendly for new homeowners', image: '/images/christmas_trees/10781397_5.jpg', approved: false },
-    { id: 'cr-4', segmentId: 'mseg-4', segmentName: 'Upgrade Shoppers', headline: 'Upgrade Your Holiday', subcopy: '7ft Champagne Tinsel Tree - modern elegance', cta: 'Upgrade Now', tone: 'Modern', hasOffer: true, offerBadge: '60% OFF Upgrade', complianceStatus: 'pending', reasoning: 'Upgrade messaging for existing tree owners', image: '/images/christmas_trees/10781390_7.jpg', approved: false },
+    { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Holiday Decorators', headline: '60% OFF Holiday Decor!', subcopy: 'Ornaments, tree toppers, and festive lights', cta: 'Shop Decor', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF Decor', complianceStatus: 'approved', reasoning: 'Holiday decor enthusiasts seeking ornaments and accessories', image: '/images/christmas_decor_collections/10788224_1.jpg', approved: false },
+    { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', headline: '60% OFF Christmas Trees!', subcopy: 'Premium pre-lit trees with warm white LEDs', cta: 'Shop Trees', tone: 'Luxurious', hasOffer: true, offerBadge: '60% OFF Trees', complianceStatus: 'approved', reasoning: 'Quality messaging for premium tree seekers', image: '/images/christmas_trees/10772929_15.jpg', approved: false },
   ],
   'Christmas Decor Collections': [
-    { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Ornament Collectors', headline: 'Build Your Collection', subcopy: '40 Pack Red & White Shatterproof Ornaments', cta: 'Shop Ornaments', tone: 'Joyful', hasOffer: true, offerBadge: '60% OFF Ornaments', complianceStatus: 'approved', reasoning: 'Collection-building for ornament enthusiasts', image: '/images/christmas_decor_collections/10788224_1.jpg', approved: false },
-    { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Theme Decorators', headline: 'Complete Your Theme', subcopy: 'Gold Bethlehem Star Tree Topper', cta: 'Shop Themes', tone: 'Elegant', hasOffer: true, offerBadge: '50% OFF Themes', complianceStatus: 'approved', reasoning: 'Coordinated decor for theme lovers', image: '/images/christmas_decor_collections/10784531_2.jpg', approved: false },
-    { id: 'cr-3', segmentId: 'mseg-3', segmentName: 'Tree Topper Seekers', headline: 'Crown Your Tree', subcopy: 'Rotating Disco Ball Tree Topper', cta: 'Shop Toppers', tone: 'Fun', hasOffer: true, offerBadge: '50% OFF Toppers', complianceStatus: 'approved', reasoning: 'Statement piece for tree toppers', image: '/images/christmas_decor_collections/10792863_2.jpg', approved: false },
-    { id: 'cr-4', segmentId: 'mseg-4', segmentName: 'Lighting Enthusiasts', headline: 'Light Up the Season', subcopy: 'Gingerbread Cookie String Lights', cta: 'Shop Lights', tone: 'Whimsical', hasOffer: true, offerBadge: '50% OFF Lights', complianceStatus: 'pending', reasoning: 'Festive lighting for holiday ambiance', image: '/images/christmas_decor_collections/10785519_4.jpg', approved: false },
+    { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Holiday Decorators', headline: '60% OFF Holiday Decor!', subcopy: 'Ornaments, tree toppers, and festive lights', cta: 'Shop Decor', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF Decor', complianceStatus: 'approved', reasoning: 'Holiday decor enthusiasts seeking ornaments and accessories', image: '/images/christmas_decor_collections/10788224_1.jpg', approved: false },
+    { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', headline: '60% OFF Christmas Trees!', subcopy: 'Premium pre-lit trees with warm white LEDs', cta: 'Shop Trees', tone: 'Luxurious', hasOffer: true, offerBadge: '60% OFF Trees', complianceStatus: 'approved', reasoning: 'Quality messaging for premium tree seekers', image: '/images/christmas_trees/10772929_15.jpg', approved: false },
   ],
 }
 
-const deriveAudienceStrategy = (category: string) => {
-  const segments = CATEGORY_SEGMENTS[category] || CATEGORY_SEGMENTS['Hair Color']
+const deriveAudienceStrategy = (category: string, client?: 'sally' | 'michaels') => {
+  // For Michaels, use Christmas Trees as default category if not specified
+  let effectiveCategory = category
+  if (client === 'michaels' && !CATEGORY_SEGMENTS[category]) {
+    effectiveCategory = 'Christmas Trees'
+  }
+  
+  const segments = CATEGORY_SEGMENTS[effectiveCategory] || (client === 'michaels' ? CATEGORY_SEGMENTS['Christmas Trees'] : CATEGORY_SEGMENTS['Hair Color'])
   return {
     segments,
     totalCoverage: segments.reduce((acc, s) => acc + s.percentage, 0),
-    segmentationLayers: [
-      { name: 'Lifecycle', type: 'rule-based' as const },
-      { name: 'Value Tier (RFM)', type: 'statistical' as const },
-      { name: 'Promo Sensitivity', type: 'statistical' as const },
-      { name: 'Category Affinity', type: 'rule-based' as const },
-    ]
+    segmentationLayers: client === 'michaels' 
+      ? [
+          { name: 'Purchase Recency', type: 'rule-based' as const },
+          { name: 'Seasonal Buyer', type: 'statistical' as const },
+          { name: 'Holiday Affinity', type: 'statistical' as const },
+          { name: 'Category Preference', type: 'rule-based' as const },
+        ]
+      : [
+          { name: 'Lifecycle', type: 'rule-based' as const },
+          { name: 'Value Tier (RFM)', type: 'statistical' as const },
+          { name: 'Promo Sensitivity', type: 'statistical' as const },
+          { name: 'Category Affinity', type: 'rule-based' as const },
+        ]
   }
 }
 
-const deriveOfferMapping = (category: string) => {
+const deriveOfferMapping = (category: string, client?: 'sally' | 'michaels') => {
+  // For Michaels, use Christmas Trees as default if category not found
+  if (client === 'michaels' && !CATEGORY_OFFERS[category]) {
+    return CATEGORY_OFFERS['Christmas Trees'] || CATEGORY_OFFERS['Hair Color']
+  }
   return CATEGORY_OFFERS[category] || CATEGORY_OFFERS['Hair Color']
 }
 
-const deriveCreatives = (category: string, segmentNames?: string[]) => {
-  const baseCreatives = CATEGORY_CREATIVES[category] || CATEGORY_CREATIVES['Hair Color']
+const deriveCreatives = (category: string, segmentNames?: string[], client?: 'sally' | 'michaels') => {
+  // For Michaels, use Christmas Trees as default if category not found
+  let effectiveCategory = category
+  if (client === 'michaels' && !CATEGORY_CREATIVES[category]) {
+    effectiveCategory = 'Christmas Trees'
+  }
   
-  // Get product groups to use their images
-  const productGroups = getProductGroupsForCampaign(segmentNames)
+  const baseCreatives = CATEGORY_CREATIVES[effectiveCategory] || (client === 'michaels' ? CATEGORY_CREATIVES['Christmas Trees'] : CATEGORY_CREATIVES['Hair Color'])
+  
+  // Get product groups to use their images (client-specific)
+  const productGroups = getProductGroupsByClient(client || 'sally', segmentNames)
   
   // Map creatives to use product images from their corresponding segment's product group
   return baseCreatives.map((creative, index) => {
@@ -806,14 +822,14 @@ export function CampaignWorkspace() {
       
       // Generate missing data based on current step
       if (campaign.currentStep === 'promo' && !campaign.offerMapping) {
-        updates.offerMapping = deriveOfferMapping(campaign.category || 'Hair Color')
+        updates.offerMapping = deriveOfferMapping(campaign.category || 'Hair Color', campaign.client)
       }
       if (campaign.currentStep === 'creative' && !campaign.creatives) {
         const segmentNames = campaign.audienceStrategy?.segments.map(s => s.name)
-        updates.creatives = deriveCreatives(campaign.category || 'Hair Color', segmentNames)
+        updates.creatives = deriveCreatives(campaign.category || 'Hair Color', segmentNames, campaign.client)
       }
       if (campaign.currentStep === 'segment' && !campaign.audienceStrategy) {
-        updates.audienceStrategy = deriveAudienceStrategy(campaign.category || 'Hair Color')
+        updates.audienceStrategy = deriveAudienceStrategy(campaign.category || 'Hair Color', campaign.client)
       }
       if (campaign.currentStep === 'context' && campaign.goal && !campaign.derivedContext) {
         updates.derivedContext = deriveContext(campaign.goal, campaign.category || 'Hair Color', campaign.channel || undefined, campaign.client)
@@ -1802,7 +1818,7 @@ function CampaignFlowView({
                     'Optimizing for campaign objective',
                   ], () => ({
                     name: campaign.derivedContext!.campaignName,
-                    audienceStrategy: deriveAudienceStrategy(campaign.category!)
+                    audienceStrategy: deriveAudienceStrategy(campaign.category!, campaign.client)
                   }))
                 }
                 onGoBack={() => {
@@ -1821,7 +1837,7 @@ function CampaignFlowView({
                     'Applying margin protection rules',
                     'Finalizing product groups',
                   ], () => ({
-                    offerMapping: deriveOfferMapping(campaign.category!)
+                    offerMapping: deriveOfferMapping(campaign.category!, campaign.client)
                   }))
                 }
                 onUpdateStrategy={(strategy) => onUpdate({ audienceStrategy: strategy })}
@@ -1855,7 +1871,7 @@ function CampaignFlowView({
                     'Matching imagery to messaging',
                     'Running compliance checks',
                   ], () => ({
-                    creatives: deriveCreatives(campaign.category!, segmentNames),
+                    creatives: deriveCreatives(campaign.category!, segmentNames, campaign.client),
                     promoSkipped: false
                   }))
                 }}
@@ -1867,7 +1883,7 @@ function CampaignFlowView({
                     'Matching imagery to messaging',
                     'Running compliance checks',
                   ], () => ({
-                    creatives: deriveCreatives(campaign.category!, segmentNames).map(c => ({ ...c, hasOffer: false, offerBadge: undefined })),
+                    creatives: deriveCreatives(campaign.category!, segmentNames, campaign.client).map(c => ({ ...c, hasOffer: false, offerBadge: undefined })),
                     promoSkipped: true
                   }))
                 }}
@@ -2079,8 +2095,9 @@ function ContextInputStep({
   }
 
   // Generate assumptions from hypotheses
-  const generateAssumptions = (hypotheses: { label: string; value: string; confidence: ConfidenceLevel }[]) => {
+  const generateAssumptions = (hypotheses: { label: string; value: string; confidence: ConfidenceLevel }[], client?: 'sally' | 'michaels', goal?: string) => {
     const assumptions: AssumptionToken[] = []
+    const lowerGoal = (goal || '').toLowerCase()
     
     // Channel assumption
     const channelHypo = hypotheses.find(h => h.label === 'Likely channel')
@@ -2088,7 +2105,7 @@ function ContextInputStep({
       assumptions.push({
         id: 'channel',
         key: 'Channel',
-        value: 'Online',
+        value: client === 'michaels' ? 'Online + In-Store' : 'Online',
         source: 'assumed',
         confidence: 'medium',
         reason: 'No channel explicitly specified in goal',
@@ -2102,23 +2119,36 @@ function ContextInputStep({
     assumptions.push({
       id: 'discount',
       key: 'Discount Flexibility',
-      value: hasMarginConstraint ? 'Conservative' : isClearance ? 'Moderate' : 'Flexible',
+      value: client === 'michaels' ? 'Up to 60% off' : hasMarginConstraint ? 'Conservative' : isClearance ? 'Moderate' : 'Flexible',
       source: 'inferred',
-      confidence: hasMarginConstraint ? 'high' : 'medium',
-      reason: hasMarginConstraint 
-        ? 'Margin protection mentioned in goal'
-        : 'No explicit discount constraints provided',
+      confidence: client === 'michaels' ? 'high' : hasMarginConstraint ? 'high' : 'medium',
+      reason: client === 'michaels' 
+        ? 'Michaels holiday sale with 60% off promotions'
+        : hasMarginConstraint 
+          ? 'Margin protection mentioned in goal'
+          : 'No explicit discount constraints provided',
       editable: true
     })
     
-    // Product scope
+    // Product scope - derive category based on client
+    let productScope = 'Full category'
+    let scopeConfidence: ConfidenceLevel = 'low'
+    let scopeReason = 'No specific sub-categories mentioned'
+    
+    if (client === 'michaels') {
+      // Michaels campaigns include both categories
+      productScope = 'Christmas Trees & Decor Collections'
+      scopeReason = 'Michaels holiday campaign - both product categories included'
+      scopeConfidence = 'high'
+    }
+    
     assumptions.push({
       id: 'scope',
       key: 'Product Scope',
-      value: 'Full category',
-      source: 'assumed',
-      confidence: 'low',
-      reason: 'No specific sub-categories mentioned',
+      value: productScope,
+      source: client === 'michaels' ? 'confirmed' : 'assumed',
+      confidence: scopeConfidence,
+      reason: scopeReason,
       editable: true
     })
     
@@ -2177,7 +2207,7 @@ function ContextInputStep({
     if (isPaused) return
     
     // Phase 3: Generate assumptions
-    const assumptions = generateAssumptions(hypotheses)
+    const assumptions = generateAssumptions(hypotheses, campaign.client, campaign.goal)
     const clarifications = generateClarifications(assumptions)
     
     setAgentState(prev => ({ 
@@ -3509,9 +3539,9 @@ function ProductStep({
   const [isReanalyzing, setIsReanalyzing] = useState(false)
   const [adjustmentApplied, setAdjustmentApplied] = useState<string | null>(null)
   
-  // Base product groups data - sourced from centralized Sally Products JSON
+  // Base product groups data - sourced from centralized Products JSON (Sally or Michaels based on client)
   const segmentNames = segments.map(s => s.name)
-  const baseProductGroups = getProductGroupsForCampaign(segmentNames)
+  const baseProductGroups = getProductGroupsByClient(campaign.client || 'sally', segmentNames)
 
   // Dynamic product groups state
   const [productGroups, setProductGroups] = useState(

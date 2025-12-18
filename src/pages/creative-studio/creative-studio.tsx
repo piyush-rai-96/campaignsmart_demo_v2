@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Palette, Sparkles, Check, Search, Image, Mail, Bell, X, Eye, RefreshCw, 
@@ -307,6 +307,25 @@ export function CreativeStudio() {
   const [isGeneratingBanners, setIsGeneratingBanners] = useState(false)
   const [bannerGenStep, setBannerGenStep] = useState(0)
   const [generatedBanners, setGeneratedBanners] = useState<{id: string, format: string, approved: boolean}[]>([])
+
+  // Refs for click-outside handling
+  const segmentDropdownRef = useRef<HTMLDivElement>(null)
+  const promoDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Click outside handler for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (segmentDropdownRef.current && !segmentDropdownRef.current.contains(event.target as Node)) {
+        setShowSegmentDropdown(false)
+      }
+      if (promoDropdownRef.current && !promoDropdownRef.current.contains(event.target as Node)) {
+        setShowPromoDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const filteredCampaigns = creativeCampaigns.filter(campaign => {
     const matchesStatus = statusFilter === 'All' || campaign.status === statusFilter
@@ -1054,7 +1073,7 @@ export function CreativeStudio() {
                       </div>
                       
                       {/* Segment Selection with Search */}
-                      <div className="relative">
+                      <div className="relative" ref={segmentDropdownRef}>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Select Segment</label>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
@@ -1106,7 +1125,7 @@ export function CreativeStudio() {
                       </div>
 
                       {/* Promotion Selection with Search */}
-                      <div className="relative">
+                      <div className="relative" ref={promoDropdownRef}>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Select Promotion</label>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />

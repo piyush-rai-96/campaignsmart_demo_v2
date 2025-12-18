@@ -220,23 +220,25 @@ export const SEGMENT_PRODUCT_MAPPINGS: SegmentProductMapping[] = [
 
 /**
  * Michaels segment-to-category mapping for campaigns
+ * Holiday Decorators -> Christmas Decor Collections
+ * Premium Tree Seekers -> Christmas Trees
  */
 export const MICHAELS_SEGMENT_MAPPINGS: SegmentProductMapping[] = [
   {
     segmentId: 'mseg-1',
     segmentName: 'Holiday Decorators',
+    group: 'Christmas Decor Collections',
+    categoryIds: ['christmas_decor_collections'],
+    rationale: 'Ornaments, tree toppers, and festive lights enthusiasts',
+    color: 'from-red-500 to-rose-500'
+  },
+  {
+    segmentId: 'mseg-2',
+    segmentName: 'Premium Tree Seekers',
     group: 'Christmas Trees',
     categoryIds: ['christmas_trees'],
     rationale: 'High-value tree buyers seeking premium pre-lit options',
     color: 'from-green-500 to-emerald-500'
-  },
-  {
-    segmentId: 'mseg-2',
-    segmentName: 'Ornament Collectors',
-    group: 'Christmas Decor Collections',
-    categoryIds: ['christmas_decor_collections'],
-    rationale: 'Seasonal decor enthusiasts buying ornaments and toppers',
-    color: 'from-red-500 to-rose-500'
   }
 ]
 

@@ -940,7 +940,7 @@ const initialAlerts: PromoAlert[] = [
   },
 ]
 
-const productTypes = ['All Product Types', 'Hair Color', 'Nail Care', 'Styling Tools', 'Skincare', 'Hair Care', 'Fragrance', 'Gift Sets']
+const productTypes = ['All Categories', 'Hair Color', 'Nail Care', 'Styling Tools', 'Skincare', 'Hair Care', 'Fragrance', 'Gift Sets']
 const seasons = ['All Seasons', 'Holiday', 'Black Friday', 'New Year', 'Spring', 'Summer']
 const channels = ['All Channels', 'Email', 'Push', 'SMS', 'In-App']
 const promoTypes = ['All Types', 'Percentage Discount', 'Fixed Discount', 'Free Shipping', 'BOGO']
@@ -959,7 +959,7 @@ export function PromoLibrary() {
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null)
   
   // Filter states
-  const [productTypeFilter, setProductTypeFilter] = useState('All Product Types')
+  const [productTypeFilter, setProductTypeFilter] = useState('All Categories')
   const [seasonFilter, setSeasonFilter] = useState('All Seasons')
   const [channelFilter, setChannelFilter] = useState('All Channels')
   const [typeFilter, setTypeFilter] = useState('All Types')
@@ -992,7 +992,7 @@ export function PromoLibrary() {
     }
   }
 
-  const hasActiveFilters = productTypeFilter !== 'All Product Types' || 
+  const hasActiveFilters = productTypeFilter !== 'All Categories' || 
     seasonFilter !== 'All Seasons' || 
     channelFilter !== 'All Channels' ||
     typeFilter !== 'All Types' ||
@@ -1000,7 +1000,7 @@ export function PromoLibrary() {
     campaignUsedFilter !== 'all'
 
   const resetFilters = () => {
-    setProductTypeFilter('All Product Types')
+    setProductTypeFilter('All Categories')
     setSeasonFilter('All Seasons')
     setChannelFilter('All Channels')
     setTypeFilter('All Types')
@@ -1013,7 +1013,7 @@ export function PromoLibrary() {
     const matchesTab = activeTab === 'upcoming' 
       ? promo.status === 'Upcoming'
       : promo.status === 'Running' || promo.status === 'Past'
-    const matchesProductType = productTypeFilter === 'All Product Types' || promo.productType === productTypeFilter
+    const matchesProductType = productTypeFilter === 'All Categories' || promo.productType === productTypeFilter
     const matchesSeason = seasonFilter === 'All Seasons' || promo.season === seasonFilter
     const matchesChannel = channelFilter === 'All Channels' || promo.channel === channelFilter
     const matchesType = typeFilter === 'All Types' || promo.type === typeFilter
@@ -1161,7 +1161,7 @@ export function PromoLibrary() {
             Filters
             {hasActiveFilters && (
               <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-xs">
-                {[productTypeFilter !== 'All Product Types', seasonFilter !== 'All Seasons', channelFilter !== 'All Channels', typeFilter !== 'All Types', scopeFilter !== 'All Scopes', campaignUsedFilter !== 'all'].filter(Boolean).length}
+                {[productTypeFilter !== 'All Categories', seasonFilter !== 'All Seasons', channelFilter !== 'All Channels', typeFilter !== 'All Types', scopeFilter !== 'All Scopes', campaignUsedFilter !== 'all'].filter(Boolean).length}
               </span>
             )}
           </Button>
@@ -1294,9 +1294,9 @@ export function PromoLibrary() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Product Type Dropdown */}
+                  {/* Category Dropdown */}
                   <div className="relative">
-                    <label className="block text-xs text-text-muted mb-1.5">Product Type</label>
+                    <label className="block text-xs text-text-muted mb-1.5">Category</label>
                     <button onClick={() => setOpenDropdown(openDropdown === 'productType' ? null : 'productType')}
                       className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{productTypeFilter}</span>
