@@ -2497,7 +2497,7 @@ function ContextInputStep({
                           { goal: 'Clear excess Kids Apparel inventory online across the US while protecting margins', icon: '📦', label: 'Inventory Clearance', client: 'sally' },
                           { goal: 'Increase full-price sell-through of new Women\'s Footwear styles online in North America', icon: '👠', label: 'Full-Price Push', client: 'sally' },
                           { goal: 'Drive Christmas Trees and Decor sales with 60% off holiday promotions to maximize seasonal revenue', icon: '🎄', label: 'Michaels Holiday Sale', client: 'michaels' },
-                          { goal: 'Drive Home Decor and Christmas Decor sales with 60% off holiday promotions for farmhouse enthusiasts', icon: '🏡', label: 'TSC Holiday Sale', client: 'tsc' }
+                          { goal: 'Drive Home Decor and Christmas Decor sales with 60% off holiday promotions targeting farmhouse lovers and seasonal shoppers', icon: '🏡', label: 'TSC Holiday Sale', client: 'tsc' }
                         ].map((example, i) => (
                           <motion.button
                             key={i}
