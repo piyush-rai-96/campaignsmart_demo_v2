@@ -364,9 +364,17 @@ export function SegmentLibrary() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       {/* Header */}
-      <header className="bg-surface border-b border-border px-8 py-6">
+      <header className="bg-surface border-b border-border px-8 py-4 shadow-sm">
         <div className="max-w-full mx-auto flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text-primary">Segment Library</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-200">
+              <Users className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-text-primary">Segment Library</h1>
+              <p className="text-sm text-text-secondary">All Customer Segments</p>
+            </div>
+          </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => setShowAlanPanel(true)}>
               <Sparkles className="w-4 h-4 mr-2" />

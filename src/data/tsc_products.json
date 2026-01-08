@@ -1,0 +1,96 @@
+{
+  "categories": [
+    {
+      "id": "home_decor",
+      "name": "Home Decor",
+      "items": [
+        {
+          "skuId": "253294399",
+          "skuName": "Red Shed Natural Coir Chicken Door Mat, 32 in. x 18 in.",
+          "price": 19.99,
+          "offerPercent": 60,
+          "discountedPrice": 7.99,
+          "imageUrl": "images/home_decor/253294399.webp"
+        },
+        {
+          "skuId": "235310399",
+          "skuName": "Red Shed Ceramic Chicken Plug-In Warmer",
+          "price": 9.99,
+          "offerPercent": 60,
+          "discountedPrice": 3.99,
+          "imageUrl": "images/home_decor/235310399.webp"
+        },
+        {
+          "skuId": "252829299",
+          "skuName": "Red Shed Premium Donkey Print Throw Blanket, 50 x 70 in.",
+          "price": 24.99,
+          "offerPercent": 60,
+          "discountedPrice": 9.99,
+          "imageUrl": "images/home_decor/252829299.webp"
+        },
+        {
+          "skuId": "252850999",
+          "skuName": "Red Shed Cast-Iron Round Catch-All Tray, 5 in.",
+          "price": 14.99,
+          "offerPercent": 60,
+          "discountedPrice": 5.99,
+          "imageUrl": "images/home_decor/252850999.jpeg"
+        },
+        {
+          "skuId": "252615799",
+          "skuName": "Red Shed Resin Wild Duck Decor, 6.75 in.",
+          "price": 24.99,
+          "offerPercent": 60,
+          "discountedPrice": 9.99,
+          "imageUrl": "images/home_decor/252615799.webp"
+        }
+      ]
+    },
+    {
+      "id": "christmas_decor",
+      "name": "Christmas Decor",
+      "items": [
+        {
+          "skuId": "252614899",
+          "skuName": "Red Shed 22 in. Metal Christmas Duck Porch Decoration",
+          "price": 39.99,
+          "offerPercent": 60,
+          "discountedPrice": 15.99,
+          "imageUrl": "images/christmas_decor/252614899.webp"
+        },
+        {
+          "skuId": "252601899",
+          "skuName": "Red Shed Pine and Berries Christmas Decoration with LED Candle, 12 in.",
+          "price": 26.99,
+          "offerPercent": 60,
+          "discountedPrice": 10.79,
+          "imageUrl": "images/christmas_decor/252601899.jpeg"
+        },
+        {
+          "skuId": "252600999",
+          "skuName": "Red Shed 26 in. Light-Up Chicken Solar Christmas Yard Stake",
+          "price": 24.99,
+          "offerPercent": 60,
+          "discountedPrice": 9.99,
+          "imageUrl": "images/christmas_decor/252600999.webp"
+        },
+        {
+          "skuId": "252618799",
+          "skuName": "Red Shed Snowy Barn Coir Christmas Door Mat, 32 in.",
+          "price": 19.99,
+          "offerPercent": 60,
+          "discountedPrice": 7.99,
+          "imageUrl": "images/christmas_decor/252618799.webp"
+        },
+        {
+          "skuId": "252599799",
+          "skuName": "Red Shed 18.9 in. Metal Christmas Pig Statue",
+          "price": 49.99,
+          "offerPercent": 60,
+          "discountedPrice": 19.99,
+          "imageUrl": "images/christmas_decor/252599799.webp"
+        }
+      ]
+    }
+  ]
+}

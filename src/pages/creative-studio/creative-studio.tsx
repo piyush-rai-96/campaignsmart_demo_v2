@@ -785,58 +785,107 @@ export function CreativeStudio() {
 
               {/* Guidelines Grid */}
               {guidelinesMode === 'view' && (
-                <div className="grid grid-cols-5 gap-3">
-                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Image className="w-3 h-3 text-slate-500" /></div>
-                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Logo Usage</h3>
+                <div className="grid grid-cols-5 gap-4">
+                  {/* Logo Usage Card */}
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+                      <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <Image className="w-3.5 h-3.5 text-blue-500" />
+                      </div>
+                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Logo Usage</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-500">
-                      {brandGuidelines.logo.rules.map((rule, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-slate-300 mt-0.5">•</span>{rule}</li>))}
+                    <ul className="space-y-2.5">
+                      {brandGuidelines.logo.rules.map((rule, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
+                          <span className="text-blue-400 mt-1 text-xs">•</span>
+                          <span>{rule}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Droplets className="w-3 h-3 text-slate-500" /></div>
-                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Color Palette</h3>
+
+                  {/* Color Palette Card */}
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+                      <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center">
+                        <Droplets className="w-3.5 h-3.5 text-purple-500" />
+                      </div>
+                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Color Palette</h3>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {brandGuidelines.colors.map(color => (
-                        <div key={color.hex} className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full shadow-sm ring-1 ring-slate-200" style={{ backgroundColor: color.hex }} />
-                          <span className="text-xs text-slate-500">{color.name}</span>
+                        <div key={color.hex} className="flex items-center gap-2.5">
+                          <div 
+                            className="w-5 h-5 rounded-full shadow-sm ring-2 ring-white ring-offset-1" 
+                            style={{ backgroundColor: color.hex }} 
+                          />
+                          <span className="text-[13px] text-slate-600">{color.name}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Type className="w-3 h-3 text-slate-500" /></div>
-                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Typography</h3>
+
+                  {/* Typography Card */}
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+                      <div className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
+                        <Type className="w-3.5 h-3.5 text-amber-500" />
+                      </div>
+                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Typography</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-500">
-                      <li><span className="text-slate-400">Headline:</span> {brandGuidelines.typography.headline}</li>
-                      <li><span className="text-slate-400">Subhead:</span> {brandGuidelines.typography.subhead}</li>
-                      <li><span className="text-slate-400">Body:</span> {brandGuidelines.typography.body}</li>
-                      <li><span className="text-slate-400">CTA:</span> {brandGuidelines.typography.cta}</li>
+                    <ul className="space-y-2.5">
+                      <li className="text-[13px]">
+                        <span className="text-slate-400 font-medium">Headline:</span>{' '}
+                        <span className="text-slate-600">{brandGuidelines.typography.headline}</span>
+                      </li>
+                      <li className="text-[13px]">
+                        <span className="text-slate-400 font-medium">Subhead:</span>{' '}
+                        <span className="text-slate-600">{brandGuidelines.typography.subhead}</span>
+                      </li>
+                      <li className="text-[13px]">
+                        <span className="text-slate-400 font-medium">Body:</span>{' '}
+                        <span className="text-slate-600">{brandGuidelines.typography.body}</span>
+                      </li>
+                      <li className="text-[13px]">
+                        <span className="text-slate-400 font-medium">CTA:</span>{' '}
+                        <span className="text-slate-600">{brandGuidelines.typography.cta}</span>
+                      </li>
                     </ul>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><MessageSquare className="w-3 h-3 text-slate-500" /></div>
-                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Tone of Voice</h3>
+
+                  {/* Tone of Voice Card */}
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+                      <div className="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center">
+                        <MessageSquare className="w-3.5 h-3.5 text-green-500" />
+                      </div>
+                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Tone of Voice</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-500">
-                      {brandGuidelines.tone.map((item, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-slate-300 mt-0.5">•</span>{item}</li>))}
+                    <ul className="space-y-2.5">
+                      {brandGuidelines.tone.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
+                          <span className="text-green-400 mt-1 text-xs">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-slate-200/60 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center"><Shield className="w-3 h-3 text-slate-500" /></div>
-                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Compliance</h3>
+
+                  {/* Compliance Card */}
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+                      <div className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center">
+                        <Shield className="w-3.5 h-3.5 text-rose-500" />
+                      </div>
+                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Compliance</h3>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-500">
-                      {brandGuidelines.compliance.map((item, i) => (<li key={i} className="flex items-start gap-1.5"><span className="text-slate-300 mt-0.5">•</span>{item}</li>))}
+                    <ul className="space-y-2.5">
+                      {brandGuidelines.compliance.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
+                          <span className="text-rose-400 mt-1 text-xs">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>

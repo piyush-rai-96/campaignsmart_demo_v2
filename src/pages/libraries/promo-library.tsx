@@ -1118,12 +1118,17 @@ export function PromoLibrary() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       {/* Header */}
-      <header className="bg-surface border-b border-border px-8 py-6">
+      <header className="bg-surface border-b border-border px-8 py-4 shadow-sm">
         <div className="max-w-full mx-auto">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-text-primary">Promotion Library</h1>
-              <p className="text-text-secondary text-sm">Synced from PromoSmart</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-200">
+                <Tag className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-text-primary">Promotion Library</h1>
+                <p className="text-sm text-text-secondary">Synced from PromoSmart</p>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               {/* Sync Status */}

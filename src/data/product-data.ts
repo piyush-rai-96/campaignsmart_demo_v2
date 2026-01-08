@@ -14,6 +14,7 @@
 
 import sallyProductsData from './sally_products.json'
 import michaelsProductsData from './michaels_products.json'
+import tscProductsData from './tsc_products.json'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -33,7 +34,7 @@ export interface Category {
   id: string
   name: string
   items: SKU[]
-  client?: 'sally' | 'michaels'  // Client identifier
+  client?: 'sally' | 'michaels' | 'tsc'  // Client identifier
 }
 
 export interface ProductData {
@@ -74,19 +75,35 @@ const sallyCategories: Category[] = sallyData.categories.map(cat => ({
   client: 'sally' as const
 }))
 
+// Map TSC data to standard SKU format
+const tscCategories: Category[] = (tscProductsData as any).categories.map((cat: any) => ({
+  id: cat.id,
+  name: cat.name,
+  client: 'tsc' as const,
+  items: cat.items.map((item: any) => ({
+    sku: item.skuId,
+    name: item.skuName,
+    visualDescription: item.skuName,
+    imageUrl: item.imageUrl,
+    price: item.price,
+    discountedPrice: item.discountedPrice,
+    offerPercent: item.offerPercent
+  }))
+}))
+
 // ============================================================================
 // EXPORTED DATA & HELPERS
 // ============================================================================
 
 /**
- * All categories from both Sally and Michaels
+ * All categories from Sally, Michaels, and TSC
  */
-export const CATEGORIES: Category[] = [...sallyCategories, ...michaelsCategories]
+export const CATEGORIES: Category[] = [...sallyCategories, ...michaelsCategories, ...tscCategories]
 
 /**
  * Get categories by client
  */
-export const getCategoriesByClient = (client: 'sally' | 'michaels'): Category[] => {
+export const getCategoriesByClient = (client: 'sally' | 'michaels' | 'tsc'): Category[] => {
   return CATEGORIES.filter(c => c.client === client)
 }
 
@@ -99,6 +116,11 @@ export const SALLY_CATEGORIES: Category[] = sallyCategories
  * Michaels-only categories
  */
 export const MICHAELS_CATEGORIES: Category[] = michaelsCategories
+
+/**
+ * TSC-only categories
+ */
+export const TSC_CATEGORIES: Category[] = tscCategories
 
 /**
  * Get category by ID
@@ -243,18 +265,44 @@ export const MICHAELS_SEGMENT_MAPPINGS: SegmentProductMapping[] = [
 ]
 
 /**
+ * TSC segment-to-category mapping for campaigns
+ * Farmhouse Enthusiasts -> Home Decor
+ * Holiday Shoppers -> Christmas Decor
+ */
+export const TSC_SEGMENT_MAPPINGS: SegmentProductMapping[] = [
+  {
+    segmentId: 'tseg-1',
+    segmentName: 'Farmhouse Enthusiasts',
+    group: 'Home Decor',
+    categoryIds: ['home_decor'],
+    rationale: 'Rustic farmhouse decor lovers seeking country-style home accents',
+    color: 'from-amber-500 to-orange-500'
+  },
+  {
+    segmentId: 'tseg-2',
+    segmentName: 'Holiday Shoppers',
+    group: 'Christmas Decor',
+    categoryIds: ['christmas_decor'],
+    rationale: 'Seasonal buyers looking for festive outdoor and porch decorations',
+    color: 'from-red-500 to-green-500'
+  }
+]
+
+/**
  * Get segment mappings by client
  */
-export const getSegmentMappingsByClient = (client: 'sally' | 'michaels'): SegmentProductMapping[] => {
-  return client === 'michaels' ? MICHAELS_SEGMENT_MAPPINGS : SEGMENT_PRODUCT_MAPPINGS
+export const getSegmentMappingsByClient = (client: 'sally' | 'michaels' | 'tsc'): SegmentProductMapping[] => {
+  if (client === 'michaels') return MICHAELS_SEGMENT_MAPPINGS
+  if (client === 'tsc') return TSC_SEGMENT_MAPPINGS
+  return SEGMENT_PRODUCT_MAPPINGS
 }
 
 /**
  * Get SKUs for a segment based on its category mappings
  */
 export const getSKUsForSegment = (segmentId: string): SKU[] => {
-  // Check both Sally and Michaels mappings
-  const allMappings = [...SEGMENT_PRODUCT_MAPPINGS, ...MICHAELS_SEGMENT_MAPPINGS]
+  // Check Sally, Michaels, and TSC mappings
+  const allMappings = [...SEGMENT_PRODUCT_MAPPINGS, ...MICHAELS_SEGMENT_MAPPINGS, ...TSC_SEGMENT_MAPPINGS]
   const mapping = allMappings.find(m => m.segmentId === segmentId)
   if (!mapping) return []
   
@@ -312,10 +360,38 @@ export const getMichaelsProductGroups = (segmentNames?: string[]) => {
 }
 
 /**
+ * Get product groups for TSC campaigns
+ */
+export const getTSCProductGroups = (segmentNames?: string[]) => {
+  return TSC_SEGMENT_MAPPINGS.map((mapping, index) => {
+    const skus = getSKUsForSegment(mapping.segmentId)
+    return {
+      segmentId: mapping.segmentId,
+      segmentName: segmentNames?.[index] || mapping.segmentName,
+      group: mapping.group,
+      baseSkuCount: skus.length * 80, // Simulated inventory count
+      rationale: mapping.rationale,
+      color: mapping.color,
+      skus: skus.map(s => ({
+        id: s.sku,
+        name: s.name,
+        price: s.price || Math.floor(Math.random() * 50) + 10,
+        discountedPrice: s.discountedPrice,
+        offerPercent: s.offerPercent,
+        image: s.imageUrl,
+        visualDescription: s.visualDescription
+      }))
+    }
+  })
+}
+
+/**
  * Get product groups by client
  */
-export const getProductGroupsByClient = (client: 'sally' | 'michaels', segmentNames?: string[]) => {
-  return client === 'michaels' ? getMichaelsProductGroups(segmentNames) : getProductGroupsForCampaign(segmentNames)
+export const getProductGroupsByClient = (client: 'sally' | 'michaels' | 'tsc', segmentNames?: string[]) => {
+  if (client === 'michaels') return getMichaelsProductGroups(segmentNames)
+  if (client === 'tsc') return getTSCProductGroups(segmentNames)
+  return getProductGroupsForCampaign(segmentNames)
 }
 
 // ============================================================================
@@ -327,6 +403,7 @@ export const getProductStats = () => ({
   totalSKUs: getAllSKUs().length,
   sallyCategories: SALLY_CATEGORIES.length,
   michaelsCategories: MICHAELS_CATEGORIES.length,
+  tscCategories: TSC_CATEGORIES.length,
   categorySummary: CATEGORIES.map(c => ({
     id: c.id,
     name: c.name,

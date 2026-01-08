@@ -40,7 +40,7 @@ interface Campaign {
   channel: string | null
   region: string | null
   lookbackWindow: string
-  client?: 'sally' | 'michaels'  // Client identifier for multi-tenant support
+  client?: 'sally' | 'michaels' | 'tsc'  // Client identifier for multi-tenant support
   // Audit info
   createdBy: string
   createdAt: Date
@@ -341,13 +341,14 @@ const MOCK_ACTIVE: Campaign[] = [
   }
 ]
 
-const deriveContext = (goal: string, category: string, channel?: string, client?: 'sally' | 'michaels') => {
+const deriveContext = (goal: string, category: string, channel?: string, client?: 'sally' | 'michaels' | 'tsc') => {
   const lowerGoal = goal.toLowerCase()
   const isClearance = lowerGoal.includes('clear') || lowerGoal.includes('inventory') || lowerGoal.includes('excess')
   const isVIP = lowerGoal.includes('vip')
   const isRetention = lowerGoal.includes('repeat') || lowerGoal.includes('retention') || lowerGoal.includes('loyalty')
   const isFullPrice = lowerGoal.includes('full-price') || lowerGoal.includes('sell-through')
-  const isMichaelsHoliday = client === 'michaels' || (lowerGoal.includes('christmas') && lowerGoal.includes('holiday'))
+  const isMichaelsHoliday = client === 'michaels' || (lowerGoal.includes('christmas') && lowerGoal.includes('holiday') && client !== 'tsc')
+  const isTSCHoliday = client === 'tsc' || (lowerGoal.includes('farmhouse') || lowerGoal.includes('tsc') || lowerGoal.includes('tractor'))
   
   // Extract category from goal if not provided
   let derivedCategory = category || 'General'
@@ -361,6 +362,15 @@ const deriveContext = (goal: string, category: string, channel?: string, client?
       derivedCategory = 'Christmas Decor Collections'
     } else {
       derivedCategory = 'Christmas Trees'
+    }
+  } else if (client === 'tsc') {
+    // TSC-specific category detection
+    if (lowerGoal.includes('christmas') || lowerGoal.includes('holiday')) {
+      derivedCategory = 'Christmas Decor'
+    } else if (lowerGoal.includes('home') || lowerGoal.includes('farmhouse') || lowerGoal.includes('decor')) {
+      derivedCategory = 'Home Decor'
+    } else {
+      derivedCategory = 'Home Decor'
     }
   } else {
     // Sally Beauty / default category detection
@@ -377,7 +387,10 @@ const deriveContext = (goal: string, category: string, channel?: string, client?
   let campaignType = 'Engagement Campaign'
   let campaignName = `${derivedCategory} Engagement Campaign`
   
-  if (isMichaelsHoliday) {
+  if (isTSCHoliday && client === 'tsc') {
+    campaignType = 'Holiday Seasonal Sale'
+    campaignName = `TSC ${derivedCategory} Holiday Campaign`
+  } else if (isMichaelsHoliday) {
     campaignType = 'Holiday Seasonal Sale'
     campaignName = `Michaels ${derivedCategory} Holiday Campaign`
   } else if (isClearance) {
@@ -398,7 +411,10 @@ const deriveContext = (goal: string, category: string, channel?: string, client?
   let risks: string[] = []
   let guardrails: string[] = []
   
-  if (isMichaelsHoliday) {
+  if (isTSCHoliday && client === 'tsc') {
+    risks = ['Seasonal inventory timing', 'Post-holiday returns', 'Competitor holiday pricing']
+    guardrails = ['60% max discount on decor', 'Bundle home and holiday items', 'Free shipping over $49']
+  } else if (isMichaelsHoliday) {
     risks = ['Seasonal inventory timing', 'Post-holiday returns', 'Competitor holiday pricing']
     guardrails = ['60% max discount on trees', 'Bundle decor with trees', 'Free shipping over $50']
   } else if (isClearance) {
@@ -420,14 +436,15 @@ const deriveContext = (goal: string, category: string, channel?: string, client?
     campaignName,
     risks,
     guardrails,
-    estimatedUniverse: client === 'michaels' ? Math.floor(Math.random() * 50000) + 80000 : Math.floor(Math.random() * 100000) + 150000,
+    estimatedUniverse: client === 'michaels' ? Math.floor(Math.random() * 50000) + 80000 : client === 'tsc' ? Math.floor(Math.random() * 40000) + 60000 : Math.floor(Math.random() * 100000) + 150000,
     marginProtection: lowerGoal.includes('margin') || lowerGoal.includes('protect') ? 'Enabled' : null,
     seasonality: lowerGoal.includes('holiday') || lowerGoal.includes('christmas') ? 'Holiday Season' : lowerGoal.includes('summer') ? 'Summer' : null,
     assumptions: [
       { key: 'Channel', value: channel || 'Online + In-Store', isAssumed: !channel },
-      { key: 'Discount flexibility', value: client === 'michaels' ? 'Up to 60% off' : isClearance ? 'Moderate' : isVIP ? 'Conservative' : 'Flexible', isAssumed: true },
+      { key: 'Discount flexibility', value: client === 'michaels' || client === 'tsc' ? 'Up to 60% off' : isClearance ? 'Moderate' : isVIP ? 'Conservative' : 'Flexible', isAssumed: true },
       { key: 'Product focus', value: derivedCategory !== 'General' ? derivedCategory : 'Category-level', isAssumed: true },
       ...(client === 'michaels' ? [{ key: 'Client', value: 'Michaels', isAssumed: false }] : []),
+      ...(client === 'tsc' ? [{ key: 'Client', value: 'TSC', isAssumed: false }] : []),
     ]
   }
 }
@@ -516,6 +533,15 @@ const CATEGORY_SEGMENTS: Record<string, { id: string; name: string; size: number
     { id: 'mseg-1', name: 'Holiday Decorators', size: 68500, percentage: 38.2, description: 'Ornaments, toppers, and decor enthusiasts', logic: 'statistical' },
     { id: 'mseg-2', name: 'Premium Tree Seekers', size: 58200, percentage: 32.4, description: 'Looking for high-end pre-lit Christmas trees', logic: 'rule-based' },
   ],
+  // TSC Categories - 2 segments for Home Decor and Christmas Decor
+  'Home Decor': [
+    { id: 'tseg-1', name: 'Farmhouse Enthusiasts', size: 45200, percentage: 35.8, description: 'Rustic farmhouse decor lovers seeking country-style home accents', logic: 'statistical' },
+    { id: 'tseg-2', name: 'Holiday Shoppers', size: 38900, percentage: 30.8, description: 'Seasonal buyers looking for festive decorations', logic: 'rule-based' },
+  ],
+  'Christmas Decor': [
+    { id: 'tseg-1', name: 'Farmhouse Enthusiasts', size: 45200, percentage: 35.8, description: 'Rustic farmhouse decor lovers seeking country-style home accents', logic: 'statistical' },
+    { id: 'tseg-2', name: 'Holiday Shoppers', size: 38900, percentage: 30.8, description: 'Seasonal buyers looking for festive outdoor and porch decorations', logic: 'rule-based' },
+  ],
 }
 
 // Category-specific offers
@@ -601,6 +627,15 @@ const CATEGORY_OFFERS: Record<string, { segmentId: string; segmentName: string; 
   'Christmas Decor Collections': [
     { segmentId: 'mseg-1', segmentName: 'Holiday Decorators', productGroup: 'Christmas Decor Collections', promotion: 'Holiday Decor Sale', promoValue: '60% OFF Decor', expectedLift: 92, marginImpact: -22, overstockCoverage: 88 },
     { segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', productGroup: 'Christmas Trees', promotion: 'Premium Tree Sale', promoValue: '60% OFF Trees', expectedLift: 95, marginImpact: -25, overstockCoverage: 85 },
+  ],
+  // TSC Categories - 2 segments
+  'Home Decor': [
+    { segmentId: 'tseg-1', segmentName: 'Farmhouse Enthusiasts', productGroup: 'Home Decor', promotion: 'Farmhouse Favorites Sale', promoValue: '60% OFF Home', expectedLift: 88, marginImpact: -20, overstockCoverage: 82 },
+    { segmentId: 'tseg-2', segmentName: 'Holiday Shoppers', productGroup: 'Christmas Decor', promotion: 'Holiday Home Sale', promoValue: '60% OFF Decor', expectedLift: 91, marginImpact: -22, overstockCoverage: 85 },
+  ],
+  'Christmas Decor': [
+    { segmentId: 'tseg-1', segmentName: 'Farmhouse Enthusiasts', productGroup: 'Home Decor', promotion: 'Farmhouse Favorites Sale', promoValue: '60% OFF Home', expectedLift: 88, marginImpact: -20, overstockCoverage: 82 },
+    { segmentId: 'tseg-2', segmentName: 'Holiday Shoppers', productGroup: 'Christmas Decor', promotion: 'Holiday Outdoor Sale', promoValue: '60% OFF Decor', expectedLift: 93, marginImpact: -24, overstockCoverage: 90 },
   ],
 }
 
@@ -688,16 +723,28 @@ const CATEGORY_CREATIVES: Record<string, { id: string; segmentId: string; segmen
     { id: 'cr-1', segmentId: 'mseg-1', segmentName: 'Holiday Decorators', headline: '60% OFF Holiday Decor!', subcopy: 'Ornaments, tree toppers, and festive lights', cta: 'Shop Decor', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF Decor', complianceStatus: 'approved', reasoning: 'Holiday decor enthusiasts seeking ornaments and accessories', image: '/images/christmas_decor_collections/10788224_1.jpg', approved: false },
     { id: 'cr-2', segmentId: 'mseg-2', segmentName: 'Premium Tree Seekers', headline: '60% OFF Christmas Trees!', subcopy: 'Premium pre-lit trees with warm white LEDs', cta: 'Shop Trees', tone: 'Luxurious', hasOffer: true, offerBadge: '60% OFF Trees', complianceStatus: 'approved', reasoning: 'Quality messaging for premium tree seekers', image: '/images/christmas_trees/10772929_15.jpg', approved: false },
   ],
+  // TSC Categories - 2 segments
+  'Home Decor': [
+    { id: 'cr-1', segmentId: 'tseg-1', segmentName: 'Farmhouse Enthusiasts', headline: '60% OFF Farmhouse Favorites!', subcopy: 'Red Shed rustic home decor and country accents', cta: 'Shop Home', tone: 'Rustic', hasOffer: true, offerBadge: '60% OFF Home', complianceStatus: 'approved', reasoning: 'Country-style appeal for farmhouse decor lovers', image: 'images/home_decor/253294399.webp', approved: false },
+    { id: 'cr-2', segmentId: 'tseg-2', segmentName: 'Holiday Shoppers', headline: '60% OFF Holiday Decor!', subcopy: 'Festive outdoor decorations and porch accents', cta: 'Shop Holiday', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF Decor', complianceStatus: 'approved', reasoning: 'Seasonal appeal for holiday decoration shoppers', image: 'images/christmas_decor/252614899.webp', approved: false },
+  ],
+  'Christmas Decor': [
+    { id: 'cr-1', segmentId: 'tseg-1', segmentName: 'Farmhouse Enthusiasts', headline: '60% OFF Farmhouse Favorites!', subcopy: 'Red Shed rustic home decor and country accents', cta: 'Shop Home', tone: 'Rustic', hasOffer: true, offerBadge: '60% OFF Home', complianceStatus: 'approved', reasoning: 'Country-style appeal for farmhouse decor lovers', image: 'images/home_decor/252829299.webp', approved: false },
+    { id: 'cr-2', segmentId: 'tseg-2', segmentName: 'Holiday Shoppers', headline: '60% OFF Christmas Decor!', subcopy: 'Metal yard stakes, LED decorations, and festive door mats', cta: 'Shop Christmas', tone: 'Festive', hasOffer: true, offerBadge: '60% OFF Decor', complianceStatus: 'approved', reasoning: 'Outdoor holiday decoration appeal for seasonal shoppers', image: 'images/christmas_decor/252600999.webp', approved: false },
+  ],
 }
 
-const deriveAudienceStrategy = (category: string, client?: 'sally' | 'michaels') => {
+const deriveAudienceStrategy = (category: string, client?: 'sally' | 'michaels' | 'tsc') => {
   // For Michaels, use Christmas Trees as default category if not specified
+  // For TSC, use Home Decor as default category if not specified
   let effectiveCategory = category
   if (client === 'michaels' && !CATEGORY_SEGMENTS[category]) {
     effectiveCategory = 'Christmas Trees'
+  } else if (client === 'tsc' && !CATEGORY_SEGMENTS[category]) {
+    effectiveCategory = 'Home Decor'
   }
   
-  const segments = CATEGORY_SEGMENTS[effectiveCategory] || (client === 'michaels' ? CATEGORY_SEGMENTS['Christmas Trees'] : CATEGORY_SEGMENTS['Hair Color'])
+  const segments = CATEGORY_SEGMENTS[effectiveCategory] || (client === 'michaels' ? CATEGORY_SEGMENTS['Christmas Trees'] : client === 'tsc' ? CATEGORY_SEGMENTS['Home Decor'] : CATEGORY_SEGMENTS['Hair Color'])
   return {
     segments,
     totalCoverage: segments.reduce((acc, s) => acc + s.percentage, 0),
@@ -708,6 +755,13 @@ const deriveAudienceStrategy = (category: string, client?: 'sally' | 'michaels')
           { name: 'Holiday Affinity', type: 'statistical' as const },
           { name: 'Category Preference', type: 'rule-based' as const },
         ]
+      : client === 'tsc'
+      ? [
+          { name: 'Purchase Recency', type: 'rule-based' as const },
+          { name: 'Farmhouse Affinity', type: 'statistical' as const },
+          { name: 'Seasonal Buyer', type: 'statistical' as const },
+          { name: 'Product Category', type: 'rule-based' as const },
+        ]
       : [
           { name: 'Lifecycle', type: 'rule-based' as const },
           { name: 'Value Tier (RFM)', type: 'statistical' as const },
@@ -717,22 +771,29 @@ const deriveAudienceStrategy = (category: string, client?: 'sally' | 'michaels')
   }
 }
 
-const deriveOfferMapping = (category: string, client?: 'sally' | 'michaels') => {
+const deriveOfferMapping = (category: string, client?: 'sally' | 'michaels' | 'tsc') => {
   // For Michaels, use Christmas Trees as default if category not found
+  // For TSC, use Home Decor as default if category not found
   if (client === 'michaels' && !CATEGORY_OFFERS[category]) {
     return CATEGORY_OFFERS['Christmas Trees'] || CATEGORY_OFFERS['Hair Color']
+  }
+  if (client === 'tsc' && !CATEGORY_OFFERS[category]) {
+    return CATEGORY_OFFERS['Home Decor'] || CATEGORY_OFFERS['Hair Color']
   }
   return CATEGORY_OFFERS[category] || CATEGORY_OFFERS['Hair Color']
 }
 
-const deriveCreatives = (category: string, segmentNames?: string[], client?: 'sally' | 'michaels') => {
+const deriveCreatives = (category: string, segmentNames?: string[], client?: 'sally' | 'michaels' | 'tsc') => {
   // For Michaels, use Christmas Trees as default if category not found
+  // For TSC, use Home Decor as default if category not found
   let effectiveCategory = category
   if (client === 'michaels' && !CATEGORY_CREATIVES[category]) {
     effectiveCategory = 'Christmas Trees'
+  } else if (client === 'tsc' && !CATEGORY_CREATIVES[category]) {
+    effectiveCategory = 'Home Decor'
   }
   
-  const baseCreatives = CATEGORY_CREATIVES[effectiveCategory] || (client === 'michaels' ? CATEGORY_CREATIVES['Christmas Trees'] : CATEGORY_CREATIVES['Hair Color'])
+  const baseCreatives = CATEGORY_CREATIVES[effectiveCategory] || (client === 'michaels' ? CATEGORY_CREATIVES['Christmas Trees'] : client === 'tsc' ? CATEGORY_CREATIVES['Home Decor'] : CATEGORY_CREATIVES['Hair Color'])
   
   // Get product groups to use their images (client-specific)
   const productGroups = getProductGroupsByClient(client || 'sally', segmentNames)
@@ -2095,7 +2156,7 @@ function ContextInputStep({
   }
 
   // Generate assumptions from hypotheses
-  const generateAssumptions = (hypotheses: { label: string; value: string; confidence: ConfidenceLevel }[], client?: 'sally' | 'michaels', _goal?: string) => {
+  const generateAssumptions = (hypotheses: { label: string; value: string; confidence: ConfidenceLevel }[], client?: 'sally' | 'michaels' | 'tsc', _goal?: string) => {
     const assumptions: AssumptionToken[] = []
     
     // Channel assumption
@@ -2104,7 +2165,7 @@ function ContextInputStep({
       assumptions.push({
         id: 'channel',
         key: 'Channel',
-        value: client === 'michaels' ? 'Online + In-Store' : 'Online',
+        value: client === 'michaels' || client === 'tsc' ? 'Online + In-Store' : 'Online',
         source: 'assumed',
         confidence: 'medium',
         reason: 'No channel explicitly specified in goal',
@@ -2118,11 +2179,13 @@ function ContextInputStep({
     assumptions.push({
       id: 'discount',
       key: 'Discount Flexibility',
-      value: client === 'michaels' ? 'Up to 60% off' : hasMarginConstraint ? 'Conservative' : isClearance ? 'Moderate' : 'Flexible',
+      value: client === 'michaels' || client === 'tsc' ? 'Up to 60% off' : hasMarginConstraint ? 'Conservative' : isClearance ? 'Moderate' : 'Flexible',
       source: 'inferred',
-      confidence: client === 'michaels' ? 'high' : hasMarginConstraint ? 'high' : 'medium',
+      confidence: client === 'michaels' || client === 'tsc' ? 'high' : hasMarginConstraint ? 'high' : 'medium',
       reason: client === 'michaels' 
         ? 'Michaels holiday sale with 60% off promotions'
+        : client === 'tsc'
+        ? 'TSC holiday sale with 60% off promotions'
         : hasMarginConstraint 
           ? 'Margin protection mentioned in goal'
           : 'No explicit discount constraints provided',
@@ -2139,13 +2202,18 @@ function ContextInputStep({
       productScope = 'Christmas Trees & Decor Collections'
       scopeReason = 'Michaels holiday campaign - both product categories included'
       scopeConfidence = 'high'
+    } else if (client === 'tsc') {
+      // TSC campaigns include both categories
+      productScope = 'Home Decor & Christmas Decor'
+      scopeReason = 'TSC holiday campaign - both product categories included'
+      scopeConfidence = 'high'
     }
     
     assumptions.push({
       id: 'scope',
       key: 'Product Scope',
       value: productScope,
-      source: client === 'michaels' ? 'confirmed' : 'assumed',
+      source: client === 'michaels' || client === 'tsc' ? 'confirmed' : 'assumed',
       confidence: scopeConfidence,
       reason: scopeReason,
       editable: true
@@ -2410,7 +2478,7 @@ function ContextInputStep({
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    4 templates
+                    5 templates
                   </motion.span>
                 </button>
                 
@@ -2428,7 +2496,8 @@ function ContextInputStep({
                           { goal: 'Drive repeat purchases from VIP customers online while avoiding heavy discounts', icon: '👑', label: 'VIP Retention', client: 'sally' },
                           { goal: 'Clear excess Kids Apparel inventory online across the US while protecting margins', icon: '📦', label: 'Inventory Clearance', client: 'sally' },
                           { goal: 'Increase full-price sell-through of new Women\'s Footwear styles online in North America', icon: '👠', label: 'Full-Price Push', client: 'sally' },
-                          { goal: 'Drive Christmas Trees and Decor sales with 60% off holiday promotions to maximize seasonal revenue', icon: '🎄', label: 'Michaels Holiday Sale', client: 'michaels' }
+                          { goal: 'Drive Christmas Trees and Decor sales with 60% off holiday promotions to maximize seasonal revenue', icon: '🎄', label: 'Michaels Holiday Sale', client: 'michaels' },
+                          { goal: 'Drive Home Decor and Christmas Decor sales with 60% off holiday promotions for farmhouse enthusiasts', icon: '🏡', label: 'TSC Holiday Sale', client: 'tsc' }
                         ].map((example, i) => (
                           <motion.button
                             key={i}
@@ -2436,13 +2505,15 @@ function ContextInputStep({
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.1, duration: 0.3 }}
                             onClick={() => {
-                              onUpdate({ goal: example.goal, client: example.client as 'sally' | 'michaels' })
+                              onUpdate({ goal: example.goal, client: example.client as 'sally' | 'michaels' | 'tsc' })
                               setIsExamplesExpanded(false)
                             }}
                             className={cn(
                               "flex items-start gap-3 p-3 bg-surface rounded-xl border text-left transition-all group",
                               example.client === 'michaels' 
                                 ? "border-green-200 hover:border-green-400 hover:bg-green-50" 
+                                : example.client === 'tsc'
+                                ? "border-amber-200 hover:border-amber-400 hover:bg-amber-50"
                                 : "border-border hover:border-primary/30 hover:bg-primary/5"
                             )}
                           >
