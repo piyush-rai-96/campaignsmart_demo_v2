@@ -170,9 +170,9 @@ const MOCK_DRAFTS: Campaign[] = [
     },
     audienceStrategy: {
       segments: [
-        { id: 'seg-1', name: 'Color Enthusiasts', size: 85000, percentage: 7.4, description: 'Frequent color changers who try new shades', logic: 'statistical' },
+        { id: 'seg-1', name: 'Change Makers', size: 85000, percentage: 7.4, description: 'Tries new products, changes style often', logic: 'statistical' },
         { id: 'seg-2', name: 'Professional Stylists', size: 140000, percentage: 12.2, description: 'Licensed pros buying for clients', logic: 'rule-based' },
-        { id: 'seg-3', name: 'First-Time Colorists', size: 95000, percentage: 8.3, description: 'New to at-home color, need guidance', logic: 'statistical' },
+        { id: 'seg-3', name: 'First-Time Stylists', size: 95000, percentage: 8.3, description: 'New to styling products, need guidance', logic: 'statistical' },
       ],
       totalCoverage: 27.9,
       segmentationLayers: [
@@ -483,10 +483,10 @@ const CATEGORY_SEGMENTS: Record<string, { id: string; name: string; size: number
   ],
   // Sally Beauty Categories
   'Hair Color': [
-    { id: 'seg-1', name: 'Color Enthusiasts', size: 45200, percentage: 24.5, description: 'Frequent color changers, try new shades', logic: 'statistical' },
+    { id: 'seg-1', name: 'Change Makers', size: 45200, percentage: 24.5, description: 'Tries new products, changes style often', logic: 'statistical' },
     { id: 'seg-2', name: 'Vivid Creators', size: 32100, percentage: 17.4, description: 'Bold fashion colors, creative expression', logic: 'rule-based' },
     { id: 'seg-3', name: 'Professional Stylists', size: 58900, percentage: 31.9, description: 'Licensed pros buying for clients', logic: 'statistical' },
-    { id: 'seg-4', name: 'First-Time Colorists', size: 28400, percentage: 15.4, description: 'New to at-home color, need guidance', logic: 'rule-based' },
+    { id: 'seg-4', name: 'First-Time Stylists', size: 28400, percentage: 15.4, description: 'New to styling products, need guidance', logic: 'rule-based' },
   ],
   'Hair Care': [
     { id: 'seg-1', name: 'Bond Repair Seekers', size: 41300, percentage: 22.1, description: 'Damaged hair, seeking repair solutions', logic: 'statistical' },
@@ -578,10 +578,10 @@ const CATEGORY_OFFERS: Record<string, { segmentId: string; segmentName: string; 
   ],
   // Sally Beauty - Using standardized categories from sally_products.json
   'Hair Color': [
-    { segmentId: 'seg-1', segmentName: 'Color Enthusiasts', productGroup: 'Hair Color', promotion: 'Color Refresh 20%', promoValue: '20% OFF Color', expectedLift: 88, marginImpact: -12, overstockCoverage: 25 },
+    { segmentId: 'seg-1', segmentName: 'Change Makers', productGroup: 'Hair Color', promotion: 'New Styling Products 20% off', promoValue: '20% OFF', expectedLift: 88, marginImpact: -12, overstockCoverage: 25 },
     { segmentId: 'seg-2', segmentName: 'Vivid Creators', productGroup: 'Hair Color', promotion: 'Vivid Color Bundle', promoValue: 'Buy 2 Get 1', expectedLift: 82, marginImpact: -15, overstockCoverage: 40 },
-    { segmentId: 'seg-3', segmentName: 'Professional Stylists', productGroup: 'Hair Color', promotion: 'Pro Color Deal', promoValue: '25% OFF $75+', expectedLift: 91, marginImpact: -10, overstockCoverage: 35 },
-    { segmentId: 'seg-4', segmentName: 'First-Time Colorists', productGroup: 'Hair Color', promotion: 'Starter Kit Special', promoValue: '15% OFF First', expectedLift: 75, marginImpact: -8, overstockCoverage: 20 },
+    { segmentId: 'seg-3', segmentName: 'Professional Stylists', productGroup: 'Hair Color', promotion: 'PRO Manicure Set Deal Buy 5 Get 5', promoValue: 'Buy 5 Get 5', expectedLift: 91, marginImpact: -10, overstockCoverage: 35 },
+    { segmentId: 'seg-4', segmentName: 'First-Time Stylists', productGroup: 'Hair Color', promotion: 'Starter Kit Special Get $20 off', promoValue: 'Get $20 off', expectedLift: 75, marginImpact: -8, overstockCoverage: 20 },
   ],
   'Hair Care': [
     { segmentId: 'seg-1', segmentName: 'Bond Repair Seekers', productGroup: 'Hair Care', promotion: 'Olaplex Exclusive', promoValue: '20% OFF Olaplex', expectedLift: 94, marginImpact: -11, overstockCoverage: 15 },
@@ -673,10 +673,10 @@ const CATEGORY_CREATIVES: Record<string, { id: string; segmentId: string; segmen
   ],
   // Sally Beauty Categories - Using product images from sally_products.json
   'Hair Color': [
-    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Color Enthusiasts', headline: 'Transform Your Look', subcopy: 'Professional color results at home', cta: 'Shop Hair Color', tone: 'Exciting', hasOffer: true, offerBadge: '20% OFF', complianceStatus: 'approved', reasoning: 'Color transformation appeals to enthusiasts', image: '/images/hair_color/WELLA17.jpg', approved: false },
+    { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Change Makers', headline: 'Transform Your Look', subcopy: 'Professional color results at home', cta: 'Shop Hair Color', tone: 'Exciting', hasOffer: true, offerBadge: '20% OFF New Styling Products', complianceStatus: 'approved', reasoning: 'Color transformation appeals to change makers', image: '/images/hair_color/WELLA17.jpg', approved: false },
     { id: 'cr-2', segmentId: 'seg-2', segmentName: 'Vivid Creators', headline: 'Go Bold, Go Vivid', subcopy: 'Unleash your creativity with vibrant colors', cta: 'Explore Vivids', tone: 'Bold', hasOffer: true, offerBadge: 'Buy 2 Get 1', complianceStatus: 'approved', reasoning: 'Creative expression drives vivid color buyers', image: '/images/hair_color/MANIC2.jpg', approved: false },
-    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Professional Stylists', headline: 'Pro Color, Pro Results', subcopy: 'Salon-quality formulas for professionals', cta: 'Shop Pro Color', tone: 'Professional', hasOffer: true, offerBadge: '25% OFF $75+', complianceStatus: 'approved', reasoning: 'Quality and reliability for professionals', image: '/images/hair_color/ION87.jpg', approved: false },
-    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'First-Time Colorists', headline: 'Your Color Journey Starts Here', subcopy: 'Easy-to-use formulas for beginners', cta: 'Start Coloring', tone: 'Encouraging', hasOffer: true, offerBadge: '15% OFF First', complianceStatus: 'pending', reasoning: 'Beginner-friendly messaging reduces hesitation', image: '/images/hair_color/ARTFOX2.jpg', approved: false },
+    { id: 'cr-3', segmentId: 'seg-3', segmentName: 'Professional Stylists', headline: 'Pro Color, Pro Results', subcopy: 'Salon-quality formulas for professionals', cta: 'Shop Pro Color', tone: 'Professional', hasOffer: true, offerBadge: 'Buy 5 Get 5', complianceStatus: 'approved', reasoning: 'Quality and reliability for professionals', image: '/images/hair_color/ION87.jpg', approved: false },
+    { id: 'cr-4', segmentId: 'seg-4', segmentName: 'First-Time Stylists', headline: 'Your Style Journey Starts Here', subcopy: 'Easy-to-use products for beginners', cta: 'Start Styling', tone: 'Encouraging', hasOffer: true, offerBadge: 'Get $20 off', complianceStatus: 'pending', reasoning: 'Beginner-friendly messaging reduces hesitation', image: '/images/hair_color/ARTFOX2.jpg', approved: false },
   ],
   'Hair Care': [
     { id: 'cr-1', segmentId: 'seg-1', segmentName: 'Bond Repair Seekers', headline: 'Repair & Restore', subcopy: 'Olaplex bond-building technology', cta: 'Shop Olaplex', tone: 'Scientific', hasOffer: true, offerBadge: '20% OFF', complianceStatus: 'approved', reasoning: 'Science-backed results for damaged hair', image: '/images/hair_care/SBS-009616.jpg', approved: false },

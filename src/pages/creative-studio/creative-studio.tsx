@@ -232,9 +232,9 @@ const availableProducts = [
 
 // Available segments for selection - Sally Beauty specific
 const availableSegments = [
-  { id: 'seg-1', name: 'Color Enthusiasts', customers: 85000, description: 'Frequent color changers' },
+  { id: 'seg-1', name: 'Change Makers', customers: 85000, description: 'Tries new products, changes style often' },
   { id: 'seg-2', name: 'Professional Stylists', customers: 140000, description: 'Licensed pros buying for clients' },
-  { id: 'seg-3', name: 'First-Time Colorists', customers: 95000, description: 'New to at-home color' },
+  { id: 'seg-3', name: 'First-Time Stylists', customers: 95000, description: 'New to styling products, need guidance' },
   { id: 'seg-4', name: 'Curl Care Devotees', customers: 72000, description: 'Textured hair enthusiasts' },
   { id: 'seg-5', name: 'Tool Upgraders', customers: 45000, description: 'Seeking premium styling tools' },
   { id: 'seg-6', name: 'Nail Art Lovers', customers: 38000, description: 'DIY nail enthusiasts' },
